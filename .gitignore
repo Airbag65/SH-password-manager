@@ -1,2 +1,5 @@
+./.idea
 ./db/database.db
-./log.file
+./logs/file.log
+./.DS_Store
+./db/.DS_Store
