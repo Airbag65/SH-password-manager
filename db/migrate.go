@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -39,7 +38,7 @@ func Migrate() {
 }
 
 func insertDefault(db *sql.DB) {
-    InsertDefaultUserQuery := `INSERT INTO user(email, password, name, surname, auth_token) VALUES(?,?,?,?,?);`
+    InsertDefaultUserQuery := `INSERT INTO user(email, password, name, surname, auth_token, token_expiry_date) VALUES(?,?,?,?,?,?);`
 
     log.Println("Inserting default user")
     statement, err := db.Prepare(InsertDefaultUserQuery)
@@ -47,7 +46,7 @@ func insertDefault(db *sql.DB) {
         log.Fatalf("Error inserting default user: %s", err)
         return
     }
-    statement.Exec("normananton03@gmail.com", "VerySecurePassword", "Anton", "Norman", uuid.New().String())
+    statement.Exec("normananton03@gmail.com", "5423ae49f2151b1c681f03528ab5fba89809aecff3b73d83051f011ff0108c02", "Anton", "Norman", "", 0)
 }
 
 func createTables(db *sql.DB) {
@@ -57,7 +56,8 @@ func createTables(db *sql.DB) {
         "password" TEXT NOT NULL,
         "name" TEXT NOT NULL,
         "surname" TEXT NOT NULL,
-        "auth_token" TEXT
+        "auth_token" TEXT, 
+        "token_expiry_date" integer
     );`
 	CreatePasswordsTableQuery := `CREATE TABLE password (
         "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,

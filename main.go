@@ -14,14 +14,14 @@ func main() {
 	f, err := os.OpenFile("logs/file.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		fmt.Printf("error opening file: %v", err)
-        return
+		return
 	}
 	defer f.Close()
-    log.SetOutput(f)
+	log.SetOutput(f)
 
 	if len(os.Args) > 1 && os.Args[1] == "migrate" {
 		db.Migrate()
-        fmt.Println(db.GetUser("normananton03@gmail.com").ToString())
+		fmt.Println(db.GetUserWithEmail("normananton03@gmail.com").ToString())
 		return
 	}
 
