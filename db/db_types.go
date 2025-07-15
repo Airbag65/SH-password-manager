@@ -27,9 +27,12 @@ func (user *User) ToString() string {
 }
 
 func DbEntryToUser(row *sql.Rows) *User {
-    selectedUser := &User{}
+	selectedUser := &User{}
 	for row.Next() {
 		row.Scan(&selectedUser.Id, &selectedUser.Email, &selectedUser.Password, &selectedUser.Name, &selectedUser.Surname, &selectedUser.AuthToken, &selectedUser.TokenExpiryDate)
 	}
-    return selectedUser
+	if selectedUser.Name == "" {
+		return nil
+	}
+	return selectedUser
 }

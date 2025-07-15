@@ -85,5 +85,4 @@ func createTables(db *sql.DB) {
 	}
 	statement.Exec()
 	log.Println("All tables created")
-
 }
