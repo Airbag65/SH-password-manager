@@ -20,7 +20,7 @@ func main() {
 	log.SetOutput(f)
 
 	if len(os.Args) > 1 && os.Args[1] == "migrate" {
-		db.Migrate()
+		// db.Migrate()
 		fmt.Println(db.GetUserWithEmail("normananton03@gmail.com").ToString())
 		return
 	}
@@ -29,6 +29,8 @@ func main() {
 
 	server.Handle("/", &HomeHandler{})
 	server.Handle("/login", &LoginHandler{})
+	server.Handle("/validateToken", &ValidateTokenHandler{})
+    server.Handle("/signOut", &SignOutHandler{})
 
 	handler := cors.Default().Handler(server)
 	http.ListenAndServe(":8080", handler)

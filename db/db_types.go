@@ -1,6 +1,9 @@
 package db
 
-import "fmt"
+import (
+	"database/sql"
+	"fmt"
+)
 
 type User struct {
 	Email           string `json:"email"`
@@ -13,12 +16,20 @@ type User struct {
 }
 
 func (user *User) ToString() string {
-	return fmt.Sprintf("Email: %s\nPassword: %s\nName: %s\nSurname: %s\nId: %d\nAuthToken: %s\nTokenExpiryDate: %d", 
-        user.Email, 
-        user.Password, 
-        user.Name, 
-        user.Surname, 
-        user.Id, 
-        user.AuthToken, 
-        user.TokenExpiryDate)
+	return fmt.Sprintf("Email: %s\nPassword: %s\nName: %s\nSurname: %s\nId: %d\nAuthToken: %s\nTokenExpiryDate: %d",
+		user.Email,
+		user.Password,
+		user.Name,
+		user.Surname,
+		user.Id,
+		user.AuthToken,
+		user.TokenExpiryDate)
+}
+
+func DbEntryToUser(row *sql.Rows) *User {
+    selectedUser := &User{}
+	for row.Next() {
+		row.Scan(&selectedUser.Id, &selectedUser.Email, &selectedUser.Password, &selectedUser.Name, &selectedUser.Surname, &selectedUser.AuthToken, &selectedUser.TokenExpiryDate)
+	}
+    return selectedUser
 }

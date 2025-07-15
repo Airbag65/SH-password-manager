@@ -33,20 +33,20 @@ func Migrate() {
 	}
 	defer database.Close()
 	createTables(database)
-    insertDefault(database)
+	insertDefault(database)
 	log.Println("Migration finished")
 }
 
 func insertDefault(db *sql.DB) {
-    InsertDefaultUserQuery := `INSERT INTO user(email, password, name, surname, auth_token, token_expiry_date) VALUES(?,?,?,?,?,?);`
+	InsertDefaultUserQuery := `INSERT INTO user(email, password, name, surname, auth_token, token_expiry_date) VALUES(?,?,?,?,?,?);`
 
-    log.Println("Inserting default user")
-    statement, err := db.Prepare(InsertDefaultUserQuery)
-    if err != nil {
-        log.Fatalf("Error inserting default user: %s", err)
-        return
-    }
-    statement.Exec("normananton03@gmail.com", "5423ae49f2151b1c681f03528ab5fba89809aecff3b73d83051f011ff0108c02", "Anton", "Norman", "", 0)
+	log.Println("Inserting default user")
+	statement, err := db.Prepare(InsertDefaultUserQuery)
+	if err != nil {
+		log.Fatalf("Error inserting default user: %s", err)
+		return
+	}
+	statement.Exec("normananton03@gmail.com", "5423ae49f2151b1c681f03528ab5fba89809aecff3b73d83051f011ff0108c02", "Anton", "Norman", "", 0)
 }
 
 func createTables(db *sql.DB) {
@@ -84,6 +84,6 @@ func createTables(db *sql.DB) {
 		return
 	}
 	statement.Exec()
-    log.Println("All tables created")
+	log.Println("All tables created")
 
 }
