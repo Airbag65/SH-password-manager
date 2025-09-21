@@ -2,6 +2,7 @@ package main
 
 import (
 	"SH-password-manager/db"
+
 	"fmt"
 	"log"
 	"net/http"
@@ -19,11 +20,23 @@ func main() {
 	defer f.Close()
 	log.SetOutput(f)
 
-	if len(os.Args) > 1 && os.Args[1] == "migrate" {
-		db.Migrate()
-		fmt.Println(db.GetUserWithEmail("normananton03@gmail.com").ToString())
-		return
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "migrate":
+			db.Migrate()
+			fmt.Println(db.GetUserWithEmail("normananton03@gmail.com").ToString())
+			return
+		// case "test":
+		// 	enc.Run()
+		// 	return
+		default:
+			return
+		}
 	}
+	// if len(os.Args) > 1 && os.Args[1] == "migrate" {
+	// }
+	// if len(os.Args) > 1 && os.Args[1] == "experiment" {
+	// }
 
 	server := http.NewServeMux()
 
