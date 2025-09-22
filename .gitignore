@@ -5,3 +5,4 @@ logs/file.log
 db/.DS_Store
 cert.pem
 key.pem
+SH-password-manager

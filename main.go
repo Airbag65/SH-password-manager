@@ -30,19 +30,21 @@ func main() {
 			return
 		}
 	}
-	// if len(os.Args) > 1 && os.Args[1] == "migrate" {
-	// }
-	// if len(os.Args) > 1 && os.Args[1] == "experiment" {
-	// }
 
 	server := http.NewServeMux()
 
+	// Auth handlers
 	server.Handle("/", &HomeHandler{})
 	server.Handle("/login", &LoginHandler{})
 	server.Handle("/validateToken", &ValidateTokenHandler{})
 	server.Handle("/signOut", &SignOutHandler{})
 	server.Handle("/createUser", &CreateNewUserHandler{})
 
+	// PWD handlers
+	server.Handle("/getPasswordHosts", &GetPasswordHostsHandler{})
+
 	handler := cors.Default().Handler(server)
-	http.ListenAndServeTLS(":443", "cert.pem", "key.pem" handler)
+	err = http.ListenAndServeTLS(":443", "cert.pem", "key.pem", handler); if err != nil {
+		log.Fatal("Could not start server")
+	}
 }
