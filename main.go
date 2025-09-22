@@ -26,9 +26,6 @@ func main() {
 			db.Migrate()
 			fmt.Println(db.GetUserWithEmail("normananton03@gmail.com").ToString())
 			return
-		// case "test":
-		// 	enc.Run()
-		// 	return
 		default:
 			return
 		}
@@ -47,5 +44,5 @@ func main() {
 	server.Handle("/createUser", &CreateNewUserHandler{})
 
 	handler := cors.Default().Handler(server)
-	http.ListenAndServe(":8080", handler)
+	http.ListenAndServeTLS(":443", "cert.pem", "key.pem" handler)
 }
