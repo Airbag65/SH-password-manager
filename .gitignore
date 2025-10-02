@@ -1,9 +1,8 @@
 .idea
-db/database.db
-logs/file.log
+backend/db/database.db
 .DS_Store
-db/.DS_Store
-cert.pem
-key.pem
-SH-password-manager
-target
+backend/db/.DS_Store
+backend/cert.pem
+backend/key.pem
+backend/SH-password-manager
+backend/target
