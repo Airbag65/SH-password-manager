@@ -61,11 +61,12 @@ func createTables(db *sql.DB) {
     );`
 	CreatePasswordsTableQuery := `CREATE TABLE password (
         "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-        "userId" integer NOT NULL,
+        "user_id" integer NOT NULL,
         "password" TEXT NOT NULL,
-        "goesTo" TEXT NOT NULL,
-        FOREIGN KEY(userId) REFERENCES user(id)
+        "host_name" TEXT NOT NULL,
+        FOREIGN KEY(user_id) REFERENCES user(id)
     );`
+
 
 	log.Println("Creating 'user' tables")
 

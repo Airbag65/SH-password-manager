@@ -12,14 +12,25 @@ func GetUserWithEmail(userEmail string) *User {
 		log.Fatal("Could not connect to './db/database.db'")
 		return nil
 	}
-	defer database.Close()
+
+	defer func(){
+		if err := database.Close(); err != nil {
+			log.Fatal("Could not close database")
+		}
+	}()
 
 	row, err := database.Query(fmt.Sprintf("SELECT * FROM user WHERE email = '%s';", userEmail))
 	if err != nil {
 		log.Fatalf("Could not retrieve user with email '%s'", userEmail)
 		return nil
 	}
-	defer row.Close()
+
+	defer func(){
+		if err := row.Close(); err != nil {
+			log.Fatal("Could not close database row")
+		}
+	}()
+
 	user := DbEntryToUser(row)
 	if user == nil {
 		log.Println("User not found(GetUserWithEmail)")
@@ -33,14 +44,25 @@ func GetUserWithAuthToken(authToken string) *User {
 		log.Fatal("Could not connect to './db/database.db'")
 		return nil
 	}
-	defer database.Close()
+
+	defer func(){
+		if err := database.Close(); err != nil {
+			log.Fatal("Could not close database")
+		}
+	}()
+
 
 	row, err := database.Query(fmt.Sprintf("SELECT * FROM user where auth_token = '%s';", authToken))
 	if err != nil {
 		log.Fatalf("Could not retrieve user with auth_token '%s'", authToken)
 		return nil
 	}
-	defer row.Close()
+
+	defer func(){
+		if err := row.Close(); err != nil {
+			log.Fatal("Could not close database row")
+		}
+	}()
 
 	selectedUser := DbEntryToUser(row)
 	if selectedUser == nil {
@@ -63,7 +85,12 @@ func SetAuthToken(userEmail, authToken string) {
 		log.Fatal("Could not connect to './db/database.db'")
 		return
 	}
-	defer database.Close()
+
+	defer func(){
+		if err := database.Close(); err != nil {
+			log.Fatal("Could not close database")
+		}
+	}()
 
 	expiryDate := time.Now().AddDate(0, 1, 0).Unix()
 	updateUserQuery := fmt.Sprintf(`UPDATE user
@@ -86,7 +113,12 @@ func RemoveAuthToken(userEmail string) {
 		log.Fatal("Could not connect to './db/database.db'")
 		return
 	}
-	defer database.Close()
+
+	defer func(){
+		if err := database.Close(); err != nil {
+			log.Fatal("Could not close database")
+		}
+	}()
 
 	user := GetUserWithEmail(userEmail)
 	if user == nil {
@@ -114,7 +146,12 @@ func CreateNewUser(email, password, name, surname string) {
 		log.Fatal("Could not connect to './db/database.db'")
 		return
 	}
-	defer database.Close()
+
+	defer func(){
+		if err := database.Close(); err != nil {
+			log.Fatal("Could not close database")
+		}
+	}()
 
 	createNewUserQuery := `INSERT INTO user(
         email, 
@@ -132,4 +169,31 @@ func CreateNewUser(email, password, name, surname string) {
 	}
 	statement.Exec(email, password, name, surname, "", 0)
 	log.Printf("Created user '%s %s' - '%s'", name, surname, email)
+}
+
+func AddNewPassord(userId int, password, hostName string) {
+	database := CreateConnection()
+	if database == nil {
+		log.Fatal("Could not connect to './db/database.db'")
+		return
+	}
+
+	defer func(){
+		if err := database.Close(); err != nil {
+			log.Fatal("Could not close database")
+		}
+	}()
+	insertNewPasswordQuery := `INSERT INTO password(
+		user_id,
+		password,
+		host_name)
+		VALUES(?,?,?);`	
+	log.Printf("Inserting new password for user '%d'", userId)
+	statement, err := database.Prepare(insertNewPasswordQuery)
+	if err != nil {
+		log.Fatalf("Error inserting new password for user '%d'", userId)
+	}
+
+	statement.Exec(userId, password, hostName)
+	log.Printf("Inserted new password for user '%d'", userId)
 }

@@ -17,7 +17,13 @@ func main() {
 		fmt.Printf("error opening file: %v", err)
 		return
 	}
-	defer f.Close()
+	defer func() {
+		err = f.Close()
+		if err != nil {
+			fmt.Println("Could not close log-file")
+		}
+	}()
+
 	log.SetOutput(f)
 
 	if len(os.Args) > 1 {
@@ -44,7 +50,8 @@ func main() {
 	server.Handle("/getPasswordHosts", &GetPasswordHostsHandler{})
 
 	handler := cors.Default().Handler(server)
-	err = http.ListenAndServeTLS(":443", "cert.pem", "key.pem", handler); if err != nil {
+	err = http.ListenAndServeTLS(":443", "cert.pem", "key.pem", handler)
+	if err != nil {
 		log.Fatal("Could not start server")
 	}
 }
