@@ -71,7 +71,12 @@ func (h *UploadNewPasswordHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	
-	db.AddNewPassord(userInformation.Id, request.Password, request.HostName)
+	err = db.AddNewPassord(userInformation.Id, request.Password, request.HostName)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte("Internal Server Error"))
+		return
+	}
 	
 	w.WriteHeader(200)	
 	w.Write([]byte("OK"))

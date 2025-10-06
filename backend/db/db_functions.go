@@ -171,11 +171,11 @@ func CreateNewUser(email, password, name, surname string) {
 	log.Printf("Created user '%s %s' - '%s'", name, surname, email)
 }
 
-func AddNewPassord(userId int, password, hostName string) {
+func AddNewPassord(userId int, password, hostName string) error {
 	database := CreateConnection()
 	if database == nil {
 		log.Fatal("Could not connect to './db/database.db'")
-		return
+		return nil
 	}
 
 	defer func(){
@@ -192,8 +192,13 @@ func AddNewPassord(userId int, password, hostName string) {
 	statement, err := database.Prepare(insertNewPasswordQuery)
 	if err != nil {
 		log.Fatalf("Error inserting new password for user '%d'", userId)
+		return err
 	}
 
-	statement.Exec(userId, password, hostName)
+	_, err = statement.Exec(userId, password, hostName)
+	if err != nil {
+		return err
+	}
 	log.Printf("Inserted new password for user '%d'", userId)
+	return nil
 }
