@@ -1,10 +1,3 @@
-.PHONY: build
-build:
-	@echo "Setting up target"
-	@mkdir -p target/bin
-	@echo "Building project"
-	@go build -o ./target/bin/main
-
 .PHONY: confirm 
 confirm:
 	@echo "Preparing clean up"
@@ -15,9 +8,16 @@ clean: confirm
 	@echo "Cleaning up ..."
 	@rm -rf target
 
+.PHONY: build
+build: 
+	@echo "Setting up target"
+	@mkdir -p target/bin
+	@echo "Building project"
+	@go build -o ./target/bin/main
 
 .PHONY: run
 run: clean build
-	@echo "Running project"
+	@echo "Running project\n\n\n"
 	@./target/bin/main
-	
+
+
