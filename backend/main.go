@@ -41,18 +41,19 @@ func main() {
 
 	// Auth handlers
 	server.Handle("/", &HomeHandler{})
-	server.Handle("/login", &LoginHandler{})
-	server.Handle("/validateToken", &ValidateTokenHandler{})
-	server.Handle("/signOut", &SignOutHandler{})
-	server.Handle("/createUser", &CreateNewUserHandler{})
+	server.Handle("/auth/login", &LoginHandler{})
+	server.Handle("/auth/valid", &ValidateTokenHandler{})
+	server.Handle("/auth/signOut", &SignOutHandler{})
+	server.Handle("/auth/new", &CreateNewUserHandler{})
 
 	// PWD handlers
-	server.Handle("/getPasswordHosts", &GetPasswordHostsHandler{})
+	server.Handle("/pwd/getHosts", &GetPasswordHostsHandler{})
 
 	handler := cors.Default().Handler(server)
 	fmt.Println("Server running on: https://localhost:443 ...")
 	err = http.ListenAndServeTLS(":443", "cert.pem", "key.pem", handler)
 	if err != nil {
-		log.Fatal("Could not start server")
+		log.Println("Could not start server")
+		log.Fatal(err)
 	}
 }
