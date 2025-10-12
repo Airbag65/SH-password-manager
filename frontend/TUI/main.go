@@ -8,8 +8,12 @@ import (
 )
 
 func main() {
-	loginModel := auth.NewLoginModel()
-	loginScreen := tea.NewProgram(loginModel, tea.WithAltScreen())
-	loginScreen.Run()
-	fmt.Println(loginModel.GetValues())
+	if !auth.ValidTokenExists() {
+		loginModel := auth.NewLoginModel()
+		loginScreen := tea.NewProgram(loginModel, tea.WithAltScreen())
+		loginScreen.Run()
+		fmt.Println(loginModel.GetValues())
+	} else {
+		fmt.Println("Already Authorized")
+	}
 }

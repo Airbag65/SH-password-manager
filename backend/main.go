@@ -50,7 +50,9 @@ func main() {
 	server.Handle("/pwd/getHosts", &GetPasswordHostsHandler{})
 
 	handler := cors.Default().Handler(server)
-	fmt.Println("Server running on: https://localhost:443 ...")
+
+
+	fmt.Println("Server running on: https://localhost:443...")
 	err = http.ListenAndServeTLS(":443", "cert.pem", "key.pem", handler)
 	if err != nil {
 		log.Println("Could not start server")
