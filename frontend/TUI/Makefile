@@ -12,8 +12,8 @@ clean: confirm
 build: 
 	@echo "Setting up target"
 	@mkdir -p target/bin
-	@touch auth/auth.json
-	@echo '{"auth_token": ""}' > auth/auth.json
+	# @touch auth/auth.json
+	# @echo '{"auth_token": ""}' > auth/auth.json
 	@echo "Building project"
 	@go mod tidy
 	@go build -o ./target/bin/main

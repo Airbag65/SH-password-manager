@@ -12,7 +12,12 @@ func main() {
 		loginModel := auth.NewLoginModel()
 		loginScreen := tea.NewProgram(loginModel, tea.WithAltScreen())
 		loginScreen.Run()
-		fmt.Println(loginModel.GetValues())
+		loginRes, err := auth.Login(loginModel.GetValues()[0], loginModel.GetValues()[1])
+		if err != nil {
+			fmt.Printf("Could not login: %v", err)
+		}
+		fmt.Println(loginRes)
+
 	} else {
 		fmt.Println("Already Authorized")
 	}
