@@ -20,6 +20,17 @@ var (
 	blurredButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Login"))
 )
 
+const titleString = `
+ /$$$$$$$                              /$$      /$$                    
+| $$__  $$                            | $$$    /$$$                    
+| $$  \ $$ /$$$$$$   /$$$$$$$ /$$$$$$$| $$$$  /$$$$  /$$$$$$  /$$$$$$$ 
+| $$$$$$$/|____  $$ /$$_____//$$_____/| $$ $$/$$ $$ |____  $$| $$__  $$
+| $$____/  /$$$$$$$|  $$$$$$|  $$$$$$ | $$  $$$| $$  /$$$$$$$| $$  \ $$
+| $$      /$$__  $$ \____  $$\____  $$| $$\  $ | $$ /$$__  $$| $$  | $$
+| $$     |  $$$$$$$ /$$$$$$$//$$$$$$$/| $$ \/  | $$|  $$$$$$$| $$  | $$
+|__/      \_______/|_______/|_______/ |__/     |__/ \_______/|__/  |__/
+`
+
 type loginModel struct {
 	Inputs     []field
 	FocusIndex int
@@ -123,7 +134,9 @@ func (model *loginModel) updateInputs(msg tea.Msg) tea.Cmd {
 func (model loginModel) View() string {
 	var builder strings.Builder
 
-	builder.WriteString("Email:\n")
+	builder.WriteString(focusedStyle.Render(titleString))
+
+	builder.WriteString("\nEmail:\n")
 	builder.WriteString(model.Inputs[0].Field.View())
 	builder.WriteString("\nPassword:\n")
 	builder.WriteString(model.Inputs[1].Field.View())
