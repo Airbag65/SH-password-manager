@@ -31,6 +31,7 @@ type LoginResponse struct {
 	AuthToken       string `json:"auth_token"`
 	Name            string `json:"name"`
 	Surname         string `json:"surname"`
+	Email           string `json:"email"`
 }
 
 type LoginHandler struct{}
@@ -83,6 +84,7 @@ func (l *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		AuthToken:       newAuthToken,
 		Name:            userInformation.Name,
 		Surname:         userInformation.Surname,
+		Email:           userInformation.Email,
 	})
 	if err != nil {
 		w.WriteHeader(500)
@@ -111,6 +113,7 @@ type ValidateTokenResponse struct {
 	ResponseMessage string `json:"response_message"`
 	Name            string `json:"name"`
 	Surname         string `json:"surname"`
+	Email           string `json:"email"`
 }
 
 func (v *ValidateTokenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -147,6 +150,7 @@ func (v *ValidateTokenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		ResponseMessage: "OK",
 		Name:            userInformation.Name,
 		Surname:         userInformation.Surname,
+		Email:           userInformation.Email,
 	})
 	if err != nil {
 		w.WriteHeader(500)

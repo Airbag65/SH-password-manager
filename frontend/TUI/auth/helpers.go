@@ -5,8 +5,15 @@ import (
 	"os"
 )
 
+type UserInformation struct {
+	AuthToken string `json:"auth_token"`
+	Name      string `json:"name"`
+	Surname   string `json:"surname"`
+	Email     string `json:"email"`
+}
+
 func RemoveLocalAuthToken() error {
-	bytesToWrite, err := json.Marshal(LocalAuth{})
+	bytesToWrite, err := json.Marshal(UserInformation{})
 	if err != nil {
 		return err
 	}
@@ -14,9 +21,12 @@ func RemoveLocalAuthToken() error {
 	return nil
 }
 
-func AddLocalAuthToken(authToken string) error {
-	bytesToWrite, err := json.Marshal(LocalAuth{
+func AddLocalAuthToken(authToken, name, surname, email string) error {
+	bytesToWrite, err := json.Marshal(UserInformation{
 		AuthToken: authToken,
+		Name: name,
+		Surname: surname,
+		Email: email,
 	})
 	if err != nil {
 		return err

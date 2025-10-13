@@ -93,6 +93,7 @@ type LoginResponse struct {
 	AuthToken       string `json:"auth_token"`
 	Name            string `json:"name"`
 	Surname         string `json:"surname"`
+	Email           string `json:"email"`
 }
 
 func Login(email, password string) (*LoginResponse, error) {
@@ -134,7 +135,8 @@ func Login(email, password string) (*LoginResponse, error) {
 		return nil, err
 	}
 
-	if err = AddLocalAuthToken(loginRes.AuthToken); err != nil {
+	err = AddLocalAuthToken(loginRes.AuthToken, loginRes.Name, loginRes.Surname, loginRes.Email)
+	if err != nil {
 		return nil, err
 	}
 

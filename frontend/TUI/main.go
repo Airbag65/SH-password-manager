@@ -16,8 +16,8 @@ func main() {
 		if err != nil {
 			fmt.Printf("Could not login: %v", err)
 		}
-		fmt.Println(loginRes)
-
+		fmt.Printf("You are now logged in as %s %s", loginRes.Name, loginRes.Surname)
+		// fmt.Println(loginRes)
 	} else {
 		fmt.Println("Already Authorized")
 	}
