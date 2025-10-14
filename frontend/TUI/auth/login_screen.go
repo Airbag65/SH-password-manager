@@ -16,8 +16,12 @@ var (
 	cursorStyle         = focusedStyle
 	noStyle             = lipgloss.NewStyle()
 
-	focusedButton = focusedStyle.Render("[ Login ]")
-	blurredButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Login"))
+	focusedLoginButton = focusedStyle.Render("[ Login ]")
+	blurredLoginButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Login"))
+
+
+	focusedSignUpButton = focusedStyle.Render("[ Sign up ]")
+	blurredSignUpButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Sign up"))
 )
 
 const titleString = `
@@ -141,9 +145,9 @@ func (model loginModel) View() string {
 	builder.WriteString("\nPassword:\n")
 	builder.WriteString(model.Inputs[1].Field.View())
 
-	button := &blurredButton
+	button := &blurredLoginButton
 	if model.FocusIndex == len(model.Inputs) {
-		button = &focusedButton
+		button = &focusedLoginButton
 	}
 	fmt.Fprintf(&builder, "\n\n%s\n\n", *button)
 
