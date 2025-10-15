@@ -9,11 +9,13 @@ import (
 )
 
 type startScreenModel struct {
-	FocusIndex int
+	FocusIndex *int
 }
 
-func NewStartScreenModel() startScreenModel {
-	return startScreenModel{}
+func NewStartScreenModel(startValue *int) startScreenModel {
+	return startScreenModel{
+		FocusIndex: startValue,
+	}
 }
 
 func (model startScreenModel) Init() tea.Cmd {
@@ -32,17 +34,17 @@ func (model startScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return model, tea.Quit
 			}
 			if s == "tab" || s == "right" {
-				model.FocusIndex++
+				*model.FocusIndex++
 			}
 
 			if s == "shift+tab" || s == "left" {
-				model.FocusIndex--
+				*model.FocusIndex--
 			}
 
-			if model.FocusIndex > 1 {
-				model.FocusIndex = 0
-			} else if model.FocusIndex < 0 {
-				model.FocusIndex = 1
+			if *model.FocusIndex > 1 {
+				*model.FocusIndex = 0
+			} else if *model.FocusIndex < 0 {
+				*model.FocusIndex = 1
 			}
 			return model, nil
 		}
@@ -51,7 +53,7 @@ func (model startScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (model *startScreenModel) GetValue() int {
-	return model.FocusIndex
+	return *model.FocusIndex
 }
 
 func (model startScreenModel) View() string {
@@ -60,7 +62,7 @@ func (model startScreenModel) View() string {
 	builder.WriteString(focusedStyle.Render(titleString))
 
 	builder.WriteString("\n\n")
-	if model.FocusIndex == 0 {
+	if *model.FocusIndex == 0 {
 		fmt.Fprintf(&builder, "\t\t%s\t\t", focusedLoginButton)
 		fmt.Fprintf(&builder, "\t\t%s\t\t", blurredSignUpButton)
 	} else {
