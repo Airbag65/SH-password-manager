@@ -1,17 +1,22 @@
 package artistics
 
 import (
+	"fmt"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
-// var (
-// 	focusedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#21aaff"))
-// 	blurredStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
-// 	cursorStyle  = focusedStyle
-// 	noStyle      = lipgloss.NewStyle()
-//
-// 	focusedLoginButton = focusedStyle.Render("[ Login ]")
-// 	blurredLoginButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Login"))
-//
-// 	focusedSignUpButton = focusedStyle.Render("[ Sign up ]")
-// 	blurredSignUpButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Sign up"))
-// )
+var (
+	FocusedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#21aaff"))
+	BlurredStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+	ErrorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#ff0000"))
+	
+	CursorStyle  = FocusedStyle
+	NoStyle      = lipgloss.NewStyle()
+
+	FocusedLoginButton = FocusedStyle.Render("[ Login ]")
+	BlurredLoginButton = fmt.Sprintf("[ %s ]", BlurredStyle.Render("Login"))
+
+	FocusedSignUpButton = FocusedStyle.Render("[ Sign up ]")
+	BlurredSignUpButton = fmt.Sprintf("[ %s ]", BlurredStyle.Render("Sign up"))
+)

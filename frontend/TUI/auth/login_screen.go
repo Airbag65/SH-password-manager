@@ -8,31 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
-
-var (
-	// focusedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#05a317"))
-	focusedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#21aaff"))
-	blurredStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
-	cursorStyle  = focusedStyle
-	noStyle      = lipgloss.NewStyle()
-
-	focusedLoginButton = focusedStyle.Render("[ Login ]")
-	blurredLoginButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Login"))
-
-	focusedSignUpButton = focusedStyle.Render("[ Sign up ]")
-	blurredSignUpButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Sign up"))
-)
-
-// const titleString = `
-//                                        _
-//   _ __   __ _ ___ ___ _ __   ___  _ __| |_
-//  | '_ \ / _` / __/ __| '_ \ / _ \| '__| __|
-//  | |_) | (_| \__ \__ \ |_) | (_) | |  | |_
-//  | .__/ \__,_|___/___/ .__/ \___/|_|   \__|
-//  |_|                 |_|
-// `
 
 type loginModel struct {
 	Inputs     []field
@@ -53,17 +29,15 @@ func NewLoginModel() loginModel {
 	var textInput textinput.Model
 	for i := range loginModel.Inputs {
 		textInput = textinput.New()
-		textInput.Cursor.Style = cursorStyle
+		textInput.Cursor.Style = art.CursorStyle
 		textInput.CharLimit = 100
 
 		switch i {
 		case 0:
-			// textInput.Placeholder = "Email"
 			textInput.Focus()
-			textInput.PromptStyle = focusedStyle
-			textInput.TextStyle = focusedStyle
+			textInput.PromptStyle = art.FocusedStyle
+			textInput.TextStyle = art.FocusedStyle
 		case 1:
-			// textInput.Placeholder = "Password"
 			textInput.EchoMode = textinput.EchoPassword
 			textInput.EchoCharacter = '*'
 		}
@@ -106,14 +80,14 @@ func (model loginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if i == model.FocusIndex {
 
 					cmds[i] = model.Inputs[i].Field.Focus()
-					model.Inputs[i].Field.PromptStyle = focusedStyle
-					model.Inputs[i].Field.TextStyle = focusedStyle
+					model.Inputs[i].Field.PromptStyle = art.FocusedStyle
+					model.Inputs[i].Field.TextStyle = art.FocusedStyle
 					continue
 				}
 
 				model.Inputs[i].Field.Blur()
-				model.Inputs[i].Field.PromptStyle = noStyle
-				model.Inputs[i].Field.TextStyle = noStyle
+				model.Inputs[i].Field.PromptStyle = art.NoStyle
+				model.Inputs[i].Field.TextStyle = art.NoStyle
 			}
 
 			return model, tea.Batch(cmds...)
@@ -137,16 +111,16 @@ func (model *loginModel) updateInputs(msg tea.Msg) tea.Cmd {
 func (model loginModel) View() string {
 	var builder strings.Builder
 
-	builder.WriteString(focusedStyle.Render(art.LoadTitle()))
+	builder.WriteString(art.FocusedStyle.Render(art.LoadTitle()))
 
 	builder.WriteString("\nEmail:\n")
 	builder.WriteString(model.Inputs[0].Field.View())
 	builder.WriteString("\nPassword:\n")
 	builder.WriteString(model.Inputs[1].Field.View())
 
-	button := &blurredLoginButton
+	button := &art.BlurredLoginButton
 	if model.FocusIndex == len(model.Inputs) {
-		button = &focusedLoginButton
+		button = &art.FocusedLoginButton
 	}
 	fmt.Fprintf(&builder, "\n\n%s\n\n", *button)
 

@@ -2,18 +2,25 @@ package main
 
 import (
 	"fmt"
-	art "pwd-manager-tui/artistics"
 	"pwd-manager-tui/auth"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
+	defer func(){
+		rec := recover()
+		if rec != nil {
+			fmt.Println("Exited passport")
+		}
+	}()
+
 	fmt.Print("\033[H\033[2J")
-	if !auth.ValidTokenExists() {
+	for !auth.ValidTokenExists() {
 		startScreenModel := auth.NewStartScreenModel(new(int))
 		startScreen := tea.NewProgram(startScreenModel, tea.WithAltScreen())
 		startScreen.Run()
+
 		switch startScreenModel.GetValue(){
 		case 0:
 			loginModel := auth.NewLoginModel()
@@ -28,9 +35,15 @@ func main() {
 			signUpModel := auth.NewSignUpModel()
 			signUpScreen := tea.NewProgram(signUpModel, tea.WithAltScreen())
 			signUpScreen.Run()
+			signUpRes, err := auth.SignUp(signUpModel.GetValues())
+			if err != nil {
+				fmt.Printf("Could not sign up: %v", err)
+			}
+			fmt.Printf("Registered user %s %s\n", signUpRes.Name, signUpRes.Surname)
+		case 2:
+			panic("exit")
 		}
 	} 
 	fmt.Println("Authorized")
 
-	fmt.Println(art.LoadTitle())
 }

@@ -28,6 +28,7 @@ func (model startScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "ctrl+x":
+			*model.FocusIndex = 2
 			return model, tea.Quit
 		case "tab", "shift+tab", "right", "left", "enter", "1", "2":
 			s := msg.String()
@@ -60,15 +61,15 @@ func (model *startScreenModel) GetValue() int {
 func (model startScreenModel) View() string {
 	var builder strings.Builder
 
-	builder.WriteString(focusedStyle.Render(art.LoadTitle()))
+	builder.WriteString(art.FocusedStyle.Render(art.LoadTitle()))
 
 	builder.WriteString("\n\n")
 	if *model.FocusIndex == 0 {
-		fmt.Fprintf(&builder, "\t%s\t", focusedLoginButton)
-		fmt.Fprintf(&builder, "\t%s\t", blurredSignUpButton)
+		fmt.Fprintf(&builder, "\t%s\t", art.FocusedLoginButton)
+		fmt.Fprintf(&builder, "\t%s\t", art.BlurredSignUpButton)
 	} else {
-		fmt.Fprintf(&builder, "\t%s\t", blurredLoginButton)
-		fmt.Fprintf(&builder, "\t%s\t", focusedSignUpButton)
+		fmt.Fprintf(&builder, "\t%s\t", art.BlurredLoginButton)
+		fmt.Fprintf(&builder, "\t%s\t", art.FocusedSignUpButton)
 	}
 
 	return builder.String()

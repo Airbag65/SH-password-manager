@@ -76,6 +76,9 @@ type LoginResponse struct {
 }
 
 func Login(email, password string) (*LoginResponse, error) {
+	if email == "" || password == "" {
+		return nil, fmt.Errorf("No email or password provided\n")
+	}
 	loginRequestBody := LoginRequest{
 		Email:    email,
 		Password: password,
@@ -120,4 +123,73 @@ func Login(email, password string) (*LoginResponse, error) {
 	}
 
 	return &loginRes, nil
+}
+
+type SignupRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Name     string `json:"name"`
+	Surname  string `json:"surname"`
+}
+
+type SignupResponse struct {
+	ResponseCode    int    `json:"response_code"`
+	ResponseMessage string `json:"response_message"`
+	AuthToken       string `json:"auth_token"`
+	Name            string `json:"name"`
+	Surname         string `json:"surname"`
+}
+
+func SignUp(email, password, name, surname string) (*SignupResponse, error) {
+	if email == "" || password == ""  || name == "" || surname == ""{
+		return nil, fmt.Errorf("Insufficient infromation provided\n")
+	}
+	
+	signupRequest := SignupRequest{
+		Email:    email,
+		Password: password,
+		Name:     name,
+		Surname:  surname,
+	}
+
+	reqBodyBytes, err := json.Marshal(signupRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	request, err := http.NewRequest("POST", "https://localhost:443/auth/new", bytes.NewBuffer(reqBodyBytes))
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Set("Content-Type", "application/json")
+
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	var buffer []byte
+	if response.StatusCode == 200 {
+		buffer, err = io.ReadAll(response.Body)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, fmt.Errorf("StatusCode was not 200, but was %d", response.StatusCode)
+	}
+
+	var signupResponse SignupResponse
+
+	err = json.Unmarshal(buffer, &signupResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	err = AddLocalAuthToken(signupResponse.AuthToken, signupResponse.Name,signupResponse.Surname, email)
+	if err != nil {
+		return nil, err
+	}
+
+	return &signupResponse, nil
 }

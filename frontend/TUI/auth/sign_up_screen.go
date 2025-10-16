@@ -27,23 +27,23 @@ func NewSignUpModel() signUpModel {
 	var textInput textinput.Model
 	for i := range signUpModel.Inputs {
 		textInput = textinput.New()
-		textInput.Cursor.Style = cursorStyle
+		textInput.Cursor.Style = art.CursorStyle
 		textInput.CharLimit = 100
 
 		switch i {
 		case 0:
 			// Email
 			textInput.Focus()
-			textInput.PromptStyle = focusedStyle
-			textInput.TextStyle = focusedStyle
+			textInput.PromptStyle = art.FocusedStyle
+			textInput.TextStyle = art.FocusedStyle
 		case 1:
 			// Name
 			// textInput.PromptStyle = blurredStyle
-			textInput.TextStyle = focusedStyle
+			textInput.TextStyle = art.FocusedStyle
 		case 2:
 			// Surname
 			// textInput.PromptStyle = blurredStyle
-			textInput.TextStyle = focusedStyle
+			textInput.TextStyle = art.FocusedStyle
 		case 3:
 			// Password
 			textInput.EchoMode = textinput.EchoPassword
@@ -68,6 +68,9 @@ func (model signUpModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "ctrl+x":
+			if !model.PasswordsMatch() {
+				model.Inputs[3].Submition = ""
+			}
 			return model, tea.Quit
 		case "tab", "shift+tab", "enter", "up", "down":
 			s := msg.String()
@@ -80,10 +83,10 @@ func (model signUpModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				model.FocusIndex++
 			}
 
-			if model.FocusIndex > len(model.Inputs) {
+			if model.FocusIndex > ternary(model.PasswordsMatch(), len(model.Inputs), len(model.Inputs) - 1) {
 				model.FocusIndex = 0
 			} else if model.FocusIndex < 0 {
-				model.FocusIndex = len(model.Inputs)
+				model.FocusIndex = ternary(model.PasswordsMatch(), len(model.Inputs), len(model.Inputs) - 1)
 			}
 
 			cmds := make([]tea.Cmd, len(model.Inputs))
@@ -91,14 +94,14 @@ func (model signUpModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if i == model.FocusIndex {
 
 					cmds[i] = model.Inputs[i].Field.Focus()
-					model.Inputs[i].Field.PromptStyle = focusedStyle
-					model.Inputs[i].Field.TextStyle = focusedStyle
+					model.Inputs[i].Field.PromptStyle = art.FocusedStyle
+					model.Inputs[i].Field.TextStyle = art.FocusedStyle
 					continue
 				}
 
 				model.Inputs[i].Field.Blur()
-				model.Inputs[i].Field.PromptStyle = noStyle
-				model.Inputs[i].Field.TextStyle = noStyle
+				model.Inputs[i].Field.PromptStyle = art.NoStyle
+				model.Inputs[i].Field.TextStyle = art.NoStyle
 			}
 
 			return model, tea.Batch(cmds...)
@@ -107,6 +110,13 @@ func (model signUpModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	cmd := model.updateInputs(msg)
 	return model, cmd
+}
+
+func ternary[T any](condition bool, trueVal, elseVal T) T {
+	if condition {
+		return trueVal
+	}
+	return elseVal
 }
 
 func (model *signUpModel) updateInputs(msg tea.Msg) tea.Cmd {
@@ -122,7 +132,7 @@ func (model *signUpModel) updateInputs(msg tea.Msg) tea.Cmd {
 func (model signUpModel) View() string {
 	var builder strings.Builder
 
-	builder.WriteString(focusedStyle.Render(art.LoadTitle()))
+	builder.WriteString(art.FocusedStyle.Render(art.LoadTitle()))
 
 	builder.WriteString("\nEmail:\n")
 	builder.WriteString(model.Inputs[0].Field.View())
@@ -135,11 +145,30 @@ func (model signUpModel) View() string {
 	builder.WriteString("\nConfirm password:\n")
 	builder.WriteString(model.Inputs[4].Field.View())
 
-	button := &blurredSignUpButton
+	if !model.PasswordsMatch() {
+		builder.WriteString(art.ErrorStyle.Render("\nPasswords must match\n"))
+	} else {
+		builder.WriteString("\n\n")
+	}
+
+	button := &art.BlurredSignUpButton
 	if model.FocusIndex == len(model.Inputs) {
-		button = &focusedSignUpButton
+		button = &art.FocusedSignUpButton
 	}
 	fmt.Fprintf(&builder, "\n\n%s\n\n", *button)
 	
 	return builder.String()
+}
+
+func (model *signUpModel) PasswordsMatch() bool {
+	return model.Inputs[3].Submition == model.Inputs[4].Submition
+}
+
+func (model *signUpModel) GetValues() (string, string, string, string) {
+	res := []string{}
+	res = append(res, model.Inputs[0].Submition)
+	res = append(res, model.Inputs[3].Submition)
+	res = append(res, model.Inputs[1].Submition)
+	res = append(res, model.Inputs[2].Submition)
+	return res[0], res[1], res[2], res[3]
 }
