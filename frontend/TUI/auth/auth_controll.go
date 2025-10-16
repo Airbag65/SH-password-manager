@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 )
 
 type LocalAuth struct {
@@ -23,30 +22,14 @@ var (
 )
 
 func ValidTokenExists() bool {
-	jsonFile, err := os.Open("auth/auth.json")
-	if err != nil {
-		fmt.Printf("An error occured while opening file: %v\n", err)
+	localData := GetSavedData()
+
+	if localData.AuthToken == "" {
 		return false
 	}
 
-	defer func() {
-		if err = jsonFile.Close(); err != nil {
-			fmt.Println("Could not close file")
-		}
-	}()
-
-	fileBytes, err := io.ReadAll(jsonFile)
-	if err != nil {
-		fmt.Printf("An error occured while parsing file content: %v\n", err)
-		return false
-	}
-
-	var localAuth LocalAuth
-
-	json.Unmarshal(fileBytes, &localAuth)
-
-	if localAuth.AuthToken == "" {
-		return false
+	localAuth := LocalAuth{
+		AuthToken: localData.AuthToken,
 	}
 
 	requestBody, err := json.Marshal(localAuth)
@@ -59,7 +42,7 @@ func ValidTokenExists() bool {
 	if err != nil {
 		fmt.Printf("An error occured while constructing request: %v\n", err)
 	}
-	// 8239d0d6-8085-4b30-8e8a-7c6052611307191bec5a-0d95-4177-bb77-9a6ad72e40f0
+
 	request.Header.Set("Content-Type", "application/json")
 
 	response, err := client.Do(request)
@@ -72,10 +55,6 @@ func ValidTokenExists() bool {
 		if err != nil {
 			fmt.Println("Could now write to file")
 		}
-		// bytesToWrite, err := json.Marshal(LocalAuth{})
-		// if err != nil {
-		// }
-		// os.WriteFile("./auth/auth.json", bytesToWrite, 0644)
 
 		return false
 	}

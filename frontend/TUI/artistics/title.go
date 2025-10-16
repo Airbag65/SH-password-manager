@@ -3,14 +3,21 @@ package artistics
 import (
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
 
 func LoadTitle() string {
 	var builder strings.Builder
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
 
-	file, err := os.Open("artistics/title.txt")
+	fullPath := filepath.Join(homeDir, ".passport/title.txt")
+
+	file, err := os.Open(fullPath)
 	if err != nil {
 		return ""
 	}

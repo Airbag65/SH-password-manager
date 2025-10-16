@@ -7,13 +7,16 @@ confirm:
 clean: confirm
 	@echo "Cleaning up ..."
 	@rm -rf target
+	@rm -rf ~/.passport
+	@mkdir ~/.passport
+	@touch ~/.passport/authentication.json
+	@echo '{"auth_token":"","name":"","surname":"","email":""}' > ~/.passport/authentication.json
+	@cp ./artistics/title.txt ~/.passport/title.txt
 
 .PHONY: build
 build: 
 	@echo "Setting up target"
 	@mkdir -p target/bin
-	# @touch auth/auth.json
-	# @echo '{"auth_token": ""}' > auth/auth.json
 	@echo "Building project"
 	@go mod tidy
 	@go build -o ./target/bin/passport

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	art "pwd-manager-tui/artistics"
 	"pwd-manager-tui/auth"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -29,7 +30,7 @@ func main() {
 			signUpScreen.Run()
 		}
 	} 
-	// fmt.Println("Authorized")
+	fmt.Println("Authorized")
 
-	// fmt.Println(artistics.LoadTitle())
+	fmt.Println(art.LoadTitle())
 }
