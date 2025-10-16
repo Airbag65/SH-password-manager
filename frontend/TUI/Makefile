@@ -16,7 +16,7 @@ build:
 	# @echo '{"auth_token": ""}' > auth/auth.json
 	@echo "Building project"
 	@go mod tidy
-	@go build -o ./target/bin/main
+	@go build -o ./target/bin/passport
 
 .PHONY: run
 run: clean build

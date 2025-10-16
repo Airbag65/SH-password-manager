@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	art "pwd-manager-tui/artistics"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -59,15 +60,15 @@ func (model *startScreenModel) GetValue() int {
 func (model startScreenModel) View() string {
 	var builder strings.Builder
 
-	builder.WriteString(focusedStyle.Render(titleString))
+	builder.WriteString(focusedStyle.Render(art.LoadTitle()))
 
 	builder.WriteString("\n\n")
 	if *model.FocusIndex == 0 {
-		fmt.Fprintf(&builder, "\t\t%s\t\t", focusedLoginButton)
-		fmt.Fprintf(&builder, "\t\t%s\t\t", blurredSignUpButton)
+		fmt.Fprintf(&builder, "\t%s\t", focusedLoginButton)
+		fmt.Fprintf(&builder, "\t%s\t", blurredSignUpButton)
 	} else {
-		fmt.Fprintf(&builder, "\t\t%s\t\t", blurredLoginButton)
-		fmt.Fprintf(&builder, "\t\t%s\t\t", focusedSignUpButton)
+		fmt.Fprintf(&builder, "\t%s\t", blurredLoginButton)
+		fmt.Fprintf(&builder, "\t%s\t", focusedSignUpButton)
 	}
 
 	return builder.String()

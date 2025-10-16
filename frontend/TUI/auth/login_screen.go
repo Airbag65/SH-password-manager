@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	art "pwd-manager-tui/artistics"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/cursor"
@@ -11,29 +12,27 @@ import (
 )
 
 var (
-	focusedStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#05a317"))
-	blurredStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
-	cursorStyle         = focusedStyle
-	noStyle             = lipgloss.NewStyle()
+	// focusedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#05a317"))
+	focusedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#21aaff"))
+	blurredStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+	cursorStyle  = focusedStyle
+	noStyle      = lipgloss.NewStyle()
 
 	focusedLoginButton = focusedStyle.Render("[ Login ]")
 	blurredLoginButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Login"))
-
 
 	focusedSignUpButton = focusedStyle.Render("[ Sign up ]")
 	blurredSignUpButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Sign up"))
 )
 
-const titleString = `
- /$$$$$$$                              /$$      /$$                    
-| $$__  $$                            | $$$    /$$$                    
-| $$  \ $$ /$$$$$$   /$$$$$$$ /$$$$$$$| $$$$  /$$$$  /$$$$$$  /$$$$$$$ 
-| $$$$$$$/|____  $$ /$$_____//$$_____/| $$ $$/$$ $$ |____  $$| $$__  $$
-| $$____/  /$$$$$$$|  $$$$$$|  $$$$$$ | $$  $$$| $$  /$$$$$$$| $$  \ $$
-| $$      /$$__  $$ \____  $$\____  $$| $$\  $ | $$ /$$__  $$| $$  | $$
-| $$     |  $$$$$$$ /$$$$$$$//$$$$$$$/| $$ \/  | $$|  $$$$$$$| $$  | $$
-|__/      \_______/|_______/|_______/ |__/     |__/ \_______/|__/  |__/
-`
+// const titleString = `
+//                                        _
+//   _ __   __ _ ___ ___ _ __   ___  _ __| |_
+//  | '_ \ / _` / __/ __| '_ \ / _ \| '__| __|
+//  | |_) | (_| \__ \__ \ |_) | (_) | |  | |_
+//  | .__/ \__,_|___/___/ .__/ \___/|_|   \__|
+//  |_|                 |_|
+// `
 
 type loginModel struct {
 	Inputs     []field
@@ -138,7 +137,7 @@ func (model *loginModel) updateInputs(msg tea.Msg) tea.Cmd {
 func (model loginModel) View() string {
 	var builder strings.Builder
 
-	builder.WriteString(focusedStyle.Render(titleString))
+	builder.WriteString(focusedStyle.Render(art.LoadTitle()))
 
 	builder.WriteString("\nEmail:\n")
 	builder.WriteString(model.Inputs[0].Field.View())

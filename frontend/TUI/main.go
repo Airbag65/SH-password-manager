@@ -9,7 +9,7 @@ import (
 
 func main() {
 	fmt.Print("\033[H\033[2J")
-	for !auth.ValidTokenExists() {
+	if !auth.ValidTokenExists() {
 		startScreenModel := auth.NewStartScreenModel(new(int))
 		startScreen := tea.NewProgram(startScreenModel, tea.WithAltScreen())
 		startScreen.Run()
@@ -24,8 +24,12 @@ func main() {
 			}
 			fmt.Printf("You are now logged in as %s %s\n", loginRes.Name, loginRes.Surname)
 		case 1:
-			fmt.Println("Sign up screen: NotYetImplemented")
+			signUpModel := auth.NewSignUpModel()
+			signUpScreen := tea.NewProgram(signUpModel, tea.WithAltScreen())
+			signUpScreen.Run()
 		}
 	} 
-	fmt.Println("Authorized")
+	// fmt.Println("Authorized")
+
+	// fmt.Println(artistics.LoadTitle())
 }
