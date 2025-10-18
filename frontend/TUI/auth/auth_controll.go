@@ -14,7 +14,7 @@ type LocalAuth struct {
 }
 
 var (
-	client = http.Client{
+	Client = http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		},
@@ -45,7 +45,7 @@ func ValidTokenExists() bool {
 
 	request.Header.Set("Content-Type", "application/json")
 
-	response, err := client.Do(request)
+	response, err := Client.Do(request)
 	if err != nil {
 		fmt.Printf("An error occured while sending request: %v\n", err)
 	}
@@ -96,7 +96,7 @@ func Login(email, password string) (*LoginResponse, error) {
 
 	request.Header.Set("Content-Type", "application/json")
 
-	response, err := client.Do(request)
+	response, err := Client.Do(request)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +164,7 @@ func SignUp(email, password, name, surname string) (*SignupResponse, error) {
 
 	request.Header.Set("Content-Type", "application/json")
 
-	response, err := client.Do(request)
+	response, err := Client.Do(request)
 	if err != nil {
 		return nil, err
 	}

@@ -19,4 +19,7 @@ var (
 
 	FocusedSignUpButton = FocusedStyle.Render("[ Sign up ]")
 	BlurredSignUpButton = fmt.Sprintf("[ %s ]", BlurredStyle.Render("Sign up"))
+	
+	FocusedSignOutButton = FocusedStyle.Render("[ Sign out ]")
+	BlurredSignOutButton = fmt.Sprintf("[ %s ]", BlurredStyle.Render("Sign out"))
 )

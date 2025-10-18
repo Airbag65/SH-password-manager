@@ -3,7 +3,6 @@ package main
 import (
 	"SH-password-manager/db"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 )
@@ -42,8 +41,6 @@ func (h *GetPasswordHostsHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	}
 
 	names := db.GetHostNames(userInformation.Id)
-
-	fmt.Println(names)
 
 	bytes, err := json.Marshal(names)
 	if err != nil {
