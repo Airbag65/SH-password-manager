@@ -202,3 +202,28 @@ func AddNewPassord(userId int, password, hostName string) error {
 	log.Printf("Inserted new password for user '%d'", userId)
 	return nil
 }
+
+func GetHostNames(userId int) []string {
+	database := CreateConnection()
+	if database == nil {
+		log.Fatal("Could not connect to './db/database.db'")
+		return nil
+	}
+
+	defer func(){
+		if err := database.Close(); err != nil {
+			log.Fatal("Could not close database")
+		}
+	}()
+
+	getHostsQuery := fmt.Sprintf("SELECT host_name FROM password where user_id = %d", userId)
+	
+	row, err := database.Query(getHostsQuery)
+	if err != nil {
+		log.Fatalf("Could not get host names for user: %d", userId)
+		return nil
+	}
+
+
+	return DbEntryToHostNames(row)
+}

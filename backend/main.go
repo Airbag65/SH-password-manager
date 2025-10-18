@@ -48,9 +48,10 @@ func main() {
 
 	// PWD handlers
 	server.Handle("/pwd/getHosts", &GetPasswordHostsHandler{})
+	server.Handle("/pwd/new", &UploadNewPasswordHandler{})
+
 
 	handler := cors.Default().Handler(server)
-
 
 	fmt.Println("Server running on: https://localhost:443...")
 	err = http.ListenAndServeTLS(":443", "cert.pem", "key.pem", handler)

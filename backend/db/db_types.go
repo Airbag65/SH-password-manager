@@ -36,3 +36,13 @@ func DbEntryToUser(row *sql.Rows) *User {
 	}
 	return selectedUser
 }
+
+func DbEntryToHostNames(rows *sql.Rows) []string {
+	hostNames := []string{}
+	for rows.Next() {
+		name := new(string)
+		rows.Scan(&name)
+		hostNames = append(hostNames, *name)
+	}
+	return hostNames
+}
