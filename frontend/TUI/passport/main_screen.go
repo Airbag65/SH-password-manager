@@ -1,4 +1,4 @@
-package passman
+package passport
 
 import (
 	"bytes"
@@ -8,6 +8,7 @@ import (
 	"net/http"
 	art "pwd-manager-tui/artistics"
 	"pwd-manager-tui/auth"
+	"pwd-manager-tui/util"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -16,6 +17,7 @@ import (
 
 type mainScreenModel struct {
 	Hosts        []string
+	HostIndex    *int
 	CurrentFocus *int
 	Width        int
 }
@@ -23,6 +25,7 @@ type mainScreenModel struct {
 func NewMainScreenModel() *mainScreenModel {
 	return &mainScreenModel{
 		CurrentFocus: new(int),
+		HostIndex:    new(int),
 	}
 }
 
@@ -104,12 +107,51 @@ func (model mainScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case 3:
 				return model, tea.Quit
 			}
+		case "j", "J", "down", "k", "K":
+			if *model.CurrentFocus == 0 {
+				s := msg.String()
+				switch s {
+				case "j", "J", "down":
+					*model.HostIndex++
+				case "k", "K", "up":
+					*model.HostIndex--
+				}
+
+			}
 		}
 	case tea.WindowSizeMsg:
 		model.Width = msg.Width
 	}
 
 	return model, nil
+}
+
+func (model *mainScreenModel) ViewHosts() string {
+	var builder strings.Builder
+
+	if *model.HostIndex > len(model.Hosts)-1 {
+		*model.HostIndex = 0
+	} else if *model.HostIndex < 0 {
+		*model.HostIndex = len(model.Hosts) - 1
+	}
+
+	for i, host := range model.Hosts {
+		if *model.HostIndex == i {
+			builder.WriteString(strings.Repeat("-", model.Width/2))
+			builder.WriteString("\n")
+			builder.WriteString(fmt.Sprintf("> %s", util.RightPad(host, 20)))
+			builder.WriteString(art.GreenStyle.Render("\t[ View (v) ]"))
+			builder.WriteString(art.YellowStyle.Render("\t[ Copy to clipboard (c) ]"))
+			builder.WriteString(art.DangerStyle.Render("\t[ Remove (x) ]"))
+			builder.WriteString("\n")
+			builder.WriteString(strings.Repeat("-", model.Width/2))
+		} else {
+			builder.WriteString(fmt.Sprintf("  %s", host))
+		}
+		builder.WriteString("\n")
+	}
+
+	return builder.String()
 }
 
 func (model mainScreenModel) View() string {
@@ -139,14 +181,15 @@ func (model mainScreenModel) View() string {
 		if len(model.Hosts) == 0 {
 			model.Hosts = GenerateHosts()
 		}
+		pageString = model.ViewHosts()
 	case 1:
 		newPasswordButton = &art.FocusedNewPasswordButton
 	case 2:
 		signOutButton = &art.FocusedSignOutButton
-		pageString = "Press ENTER to sign out"	
+		pageString = "Press ENTER to sign out"
 	case 3:
 		quitButton = &art.FocusedQuitButton
-		pageString = "Press ENTER to quit passport"	
+		pageString = "Press ENTER to quit passport"
 	}
 
 	fmt.Fprintf(&builder, "\n[l] %s\t\t[n] %s\t\t[s] %s\t\t[q] %s\n",

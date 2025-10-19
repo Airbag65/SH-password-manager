@@ -146,7 +146,7 @@ func (model signUpModel) View() string {
 	builder.WriteString(model.Inputs[4].Field.View())
 
 	if !model.PasswordsMatch() {
-		builder.WriteString(art.ErrorStyle.Render("\nPasswords must match\n"))
+		builder.WriteString(art.DangerStyle.Render("\nPasswords must match\n"))
 	} else {
 		builder.WriteString("\n\n")
 	}

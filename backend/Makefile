@@ -8,7 +8,7 @@ build:
 	@mkdir -p target/bin
 	@echo "=== START OF LOG ===" > ./target/log/file.log
 	@echo "Building project"
-	@go build -o ./target/bin/api
+	@go build -o ./target/bin/passport-server
 
 .PHONY: confirm 
 confirm:
@@ -23,4 +23,4 @@ clean: confirm
 .PHONY: run
 run: build
 	@echo "Running project"
-	@./target/bin/api
+	@./target/bin/passport-server

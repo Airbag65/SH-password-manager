@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"pwd-manager-tui/auth"
-	pass "pwd-manager-tui/passman"
+	pass "pwd-manager-tui/passport"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
