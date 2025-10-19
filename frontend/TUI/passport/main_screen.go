@@ -107,7 +107,7 @@ func (model mainScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case 3:
 				return model, tea.Quit
 			}
-		case "j", "J", "down", "k", "K":
+		case "j", "J", "down", "k", "K", "up":
 			if *model.CurrentFocus == 0 {
 				s := msg.String()
 				switch s {
@@ -184,6 +184,7 @@ func (model mainScreenModel) View() string {
 		pageString = model.ViewHosts()
 	case 1:
 		newPasswordButton = &art.FocusedNewPasswordButton
+		pageString = model.NewPasswordView()
 	case 2:
 		signOutButton = &art.FocusedSignOutButton
 		pageString = "Press ENTER to sign out"
