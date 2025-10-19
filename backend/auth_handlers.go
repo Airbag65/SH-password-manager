@@ -2,8 +2,10 @@ package main
 
 import (
 	"SH-password-manager/db"
+	"SH-password-manager/enc"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -32,6 +34,7 @@ type LoginResponse struct {
 	Name            string `json:"name"`
 	Surname         string `json:"surname"`
 	Email           string `json:"email"`
+	PemString       string `json:"pem_string"`
 }
 
 type LoginHandler struct{}
@@ -77,6 +80,14 @@ func (l *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	pemString, err := enc.PEMFileToString("publicKey")
+	if err != nil {
+		log.Printf("Error: %v", err)	
+		w.WriteHeader(500)
+		w.Write([]byte("Internal server error"))
+		return
+	}
+
 	newAuthToken := fmt.Sprintf("%s%s", uuid.New().String(), uuid.New().String())
 	response, err := json.Marshal(&LoginResponse{
 		ResponseCode:    200,
@@ -85,8 +96,10 @@ func (l *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Name:            userInformation.Name,
 		Surname:         userInformation.Surname,
 		Email:           userInformation.Email,
+		PemString:       pemString,
 	})
 	if err != nil {
+		log.Printf("Error: %v", err)	
 		w.WriteHeader(500)
 		w.Write([]byte("Internal server error"))
 		return
@@ -114,6 +127,7 @@ type ValidateTokenResponse struct {
 	Name            string `json:"name"`
 	Surname         string `json:"surname"`
 	Email           string `json:"email"`
+	PemString       string `json:"pem_string"`
 }
 
 func (v *ValidateTokenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -145,12 +159,20 @@ func (v *ValidateTokenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	pemString, err := enc.PEMFileToString("publicKey")
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte("Internal Server Error"))
+		return
+	}
+
 	response, err := json.Marshal(&ValidateTokenResponse{
 		ResponseCode:    200,
 		ResponseMessage: "OK",
 		Name:            userInformation.Name,
 		Surname:         userInformation.Surname,
 		Email:           userInformation.Email,
+		PemString:       pemString,
 	})
 	if err != nil {
 		w.WriteHeader(500)
@@ -245,6 +267,7 @@ type CreateNewUserResponse struct {
 	AuthToken       string `json:"auth_token"`
 	Name            string `json:"name"`
 	Surname         string `json:"surname"`
+	PemString       string `json:"pem_string"`
 }
 
 func (c *CreateNewUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -276,6 +299,13 @@ func (c *CreateNewUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	pemString, err := enc.PEMFileToString("publicKey")
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte("Internal Server Error"))
+		return
+	}
+
 	encPwd := encryptPassword(request.Password)
 	db.CreateNewUser(request.Email, encPwd, request.Name, request.Surname)
 	newAuthToken := fmt.Sprintf("%s%s", uuid.New().String(), uuid.New().String())
@@ -285,6 +315,7 @@ func (c *CreateNewUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		AuthToken:       newAuthToken,
 		Name:            request.Name,
 		Surname:         request.Surname,
+		PemString:       pemString,
 	})
 	db.SetAuthToken(request.Email, newAuthToken)
 	w.WriteHeader(200)

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"pwd-manager-tui/enc"
 )
 
 type LocalAuth struct {
@@ -73,6 +74,7 @@ type LoginResponse struct {
 	Name            string `json:"name"`
 	Surname         string `json:"surname"`
 	Email           string `json:"email"`
+	PemString       string `json:"pem_string"`
 }
 
 func Login(email, password string) (*LoginResponse, error) {
@@ -117,6 +119,10 @@ func Login(email, password string) (*LoginResponse, error) {
 		return nil, err
 	}
 
+	if err = enc.StringToPEMFile(loginRes.PemString); err != nil {
+		return nil, err
+	}
+
 	err = AddLocalAuthToken(loginRes.AuthToken, loginRes.Name, loginRes.Surname, loginRes.Email)
 	if err != nil {
 		return nil, err
@@ -138,13 +144,14 @@ type SignupResponse struct {
 	AuthToken       string `json:"auth_token"`
 	Name            string `json:"name"`
 	Surname         string `json:"surname"`
+	PemString string `json:"pem_string"`
 }
 
 func SignUp(email, password, name, surname string) (*SignupResponse, error) {
-	if email == "" || password == ""  || name == "" || surname == ""{
+	if email == "" || password == "" || name == "" || surname == "" {
 		return nil, fmt.Errorf("Insufficient infromation provided\n")
 	}
-	
+
 	signupRequest := SignupRequest{
 		Email:    email,
 		Password: password,
@@ -186,7 +193,11 @@ func SignUp(email, password, name, surname string) (*SignupResponse, error) {
 		return nil, err
 	}
 
-	err = AddLocalAuthToken(signupResponse.AuthToken, signupResponse.Name,signupResponse.Surname, email)
+	if err = enc.StringToPEMFile(signupResponse.PemString); err != nil {
+		return nil, err
+	}
+
+	err = AddLocalAuthToken(signupResponse.AuthToken, signupResponse.Name, signupResponse.Surname, email)
 	if err != nil {
 		return nil, err
 	}
@@ -204,7 +215,7 @@ func SignOut() error {
 	signOutReq := SignOutRequest{
 		Email: email,
 	}
-	
+
 	reqBody, err := json.Marshal(signOutReq)
 	if err != nil {
 		return err

@@ -25,4 +25,10 @@ var (
 
 	FocusedQuitButton = FocusedStyle.Render("[ Quit ]")
 	BlurredQuitButton = fmt.Sprintf("[ %s ]", BlurredStyle.Render("Quit"))
+
+	FocusedListButton = FocusedStyle.Render("[ List ]")
+	BlurredListButton = fmt.Sprintf("[ %s ]", BlurredStyle.Render("List"))
+
+	FocusedNewPasswordButton = FocusedStyle.Render("[ New password ]")
+	BlurredNewPasswordButton = fmt.Sprintf("[ %s ]", BlurredStyle.Render("New password"))
 )

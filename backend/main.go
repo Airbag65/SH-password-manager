@@ -2,6 +2,7 @@ package main
 
 import (
 	"SH-password-manager/db"
+	"SH-password-manager/enc"
 
 	"fmt"
 	"log"
@@ -32,6 +33,22 @@ func main() {
 			db.Migrate()
 			fmt.Println(db.GetUserWithEmail("normananton03@gmail.com").ToString())
 			return
+		case "keygen":
+			fmt.Println("Generating Keys")
+			private, public, err := enc.GenerateKeys()
+			if err != nil {
+				return
+			}
+			fmt.Println("Making PEM strings")
+			privatePemString := enc.PrivateKeyToPemString(private)
+			publicPemString := enc.PublicKeyToPemString(public)
+			fmt.Println("Saving PEM files")
+			if err = enc.StringToPEMFile(privatePemString, "privateKey"); err != nil {
+				return
+			}
+			if err = enc.StringToPEMFile(publicPemString, "publicKey"); err != nil {
+				return
+			}
 		default:
 			return
 		}

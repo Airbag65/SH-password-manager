@@ -10,6 +10,7 @@ clean: confirm
 	@rm -rf ~/.passport
 	@mkdir ~/.passport
 	@touch ~/.passport/authentication.json
+	@touch ~/.passport/publicKey.pem
 	@echo '{"auth_token":"","name":"","surname":"","email":""}' > ~/.passport/authentication.json
 	@cp ./artistics/title.txt ~/.passport/title.txt
 

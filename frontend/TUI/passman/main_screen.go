@@ -77,6 +77,10 @@ func (model mainScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return model, nil
 			}
 			return model, tea.Quit
+		case "l", "L":
+			*model.CurrentFocus = 0
+		case "n", "N":
+			*model.CurrentFocus = 1
 		case "tab", "shift+tab":
 			s := msg.String()
 			if s == "tab" {
@@ -84,21 +88,20 @@ func (model mainScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				*model.CurrentFocus--
 			}
-
-			if *model.CurrentFocus > 1 {
+			if *model.CurrentFocus > 3 {
 				*model.CurrentFocus = 0
 			} else if *model.CurrentFocus < 0 {
-				*model.CurrentFocus = 1
+				*model.CurrentFocus = 3
 			}
 		case "enter":
 			switch *model.CurrentFocus {
-			case 0:
+			case 2:
 				err := auth.SignOut()
 				if err != nil {
 					return model, nil
 				}
 				return model, tea.Quit
-			case 1:
+			case 3:
 				return model, tea.Quit
 			}
 		}
@@ -113,10 +116,10 @@ func (model mainScreenModel) View() string {
 	var builder strings.Builder
 	builder.WriteString(art.FocusedStyle.Render(art.LoadTitle()))
 	builder.WriteString("\n")
-	
+
 	userInfo := auth.GetSavedData()
 
-	userInfoString := fmt.Sprintf("%s %s [ %s ]",userInfo.Name, userInfo.Surname, userInfo.Email)
+	userInfoString := fmt.Sprintf("%s %s [ %s ]", userInfo.Name, userInfo.Surname, userInfo.Email)
 
 	builder.WriteString(art.FocusedStyle.Render(userInfoString))
 	builder.WriteString("\n")
@@ -125,15 +128,35 @@ func (model mainScreenModel) View() string {
 
 	signOutButton := &art.BlurredSignOutButton
 	quitButton := &art.BlurredQuitButton
+	listButton := &art.BlurredListButton
+	newPasswordButton := &art.BlurredNewPasswordButton
+
+	pageString := ""
+
 	switch *model.CurrentFocus {
 	case 0:
-		signOutButton = &art.FocusedSignOutButton
+		listButton = &art.FocusedListButton
+		if len(model.Hosts) == 0 {
+			model.Hosts = GenerateHosts()
+		}
 	case 1:
+		newPasswordButton = &art.FocusedNewPasswordButton
+	case 2:
+		signOutButton = &art.FocusedSignOutButton
+		pageString = "Press ENTER to sign out"	
+	case 3:
 		quitButton = &art.FocusedQuitButton
+		pageString = "Press ENTER to quit passport"	
 	}
-	
-	fmt.Fprintf(&builder, "\n\n[s] %s\t\t[q] %s\n", *signOutButton, *quitButton)
-		
+
+	fmt.Fprintf(&builder, "\n[l] %s\t\t[n] %s\t\t[s] %s\t\t[q] %s\n",
+		*listButton,
+		*newPasswordButton,
+		*signOutButton,
+		*quitButton)
+	builder.WriteString(art.FocusedStyle.Render(strings.Repeat("-", model.Width)))
+	builder.WriteString("\n")
+	builder.WriteString(pageString)
 
 	return builder.String()
 }

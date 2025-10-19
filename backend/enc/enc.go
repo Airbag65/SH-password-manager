@@ -7,7 +7,10 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/pem"
+	"fmt"
+	"io"
 	"log"
+	"os"
 )
 
 
@@ -43,6 +46,38 @@ func PublicKeyToPemString(key *rsa.PublicKey) string {
 	})
 	return string(keyPEM)
 }
+
+func StringToPEMFile(pemString, fileName string) error {
+	path := fmt.Sprintf("./target/pem/%s.pem", fileName)
+
+	os.WriteFile(path, []byte(pemString), 0644)
+	return nil
+}
+
+func PEMFileToString(fileName string) (string, error) {
+
+	path := fmt.Sprintf("./target/pem/%s.pem", fileName)
+
+	pemFile, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+
+	defer func(){
+		if err = pemFile.Close(); err != nil {
+			fmt.Println("Could not close file")
+		}
+	}()
+
+	pemBytes, err := io.ReadAll(pemFile)
+	if err != nil {
+		return "", err
+	}
+	
+	return string(pemBytes), nil
+}
+
+
 
 func PemStringToPublicKey(pemString string) *rsa.PublicKey {
 	block, _ := pem.Decode([]byte(pemString))
