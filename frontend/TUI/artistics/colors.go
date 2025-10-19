@@ -22,4 +22,7 @@ var (
 	
 	FocusedSignOutButton = FocusedStyle.Render("[ Sign out ]")
 	BlurredSignOutButton = fmt.Sprintf("[ %s ]", BlurredStyle.Render("Sign out"))
+
+	FocusedQuitButton = FocusedStyle.Render("[ Quit ]")
+	BlurredQuitButton = fmt.Sprintf("[ %s ]", BlurredStyle.Render("Quit"))
 )

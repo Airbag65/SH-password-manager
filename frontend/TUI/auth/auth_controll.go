@@ -193,3 +193,40 @@ func SignUp(email, password, name, surname string) (*SignupResponse, error) {
 
 	return &signupResponse, nil
 }
+
+type SignOutRequest struct {
+	Email string `json:"email"`
+}
+
+func SignOut() error {
+	email := GetSavedData().Email
+
+	signOutReq := SignOutRequest{
+		Email: email,
+	}
+	
+	reqBody, err := json.Marshal(signOutReq)
+	if err != nil {
+		return err
+	}
+
+	request, err := http.NewRequest("PUT", "https://localhost:443/auth/signOut", bytes.NewBuffer(reqBody))
+	if err != nil {
+		return err
+	}
+
+	request.Header.Set("Content-Type", "application/json")
+
+	res, err := Client.Do(request)
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode == 200 {
+		if err = RemoveLocalAuthToken(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

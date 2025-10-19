@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"pwd-manager-tui/auth"
+	pass "pwd-manager-tui/passman"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -44,6 +45,10 @@ func main() {
 			panic("exit")
 		}
 	} 
+	mainScreenModel := pass.NewMainScreenModel()
+	mainscreen := tea.NewProgram(mainScreenModel, tea.WithAltScreen())
+	mainscreen.Run()
+
 	fmt.Println("Authorized")
 
 }
