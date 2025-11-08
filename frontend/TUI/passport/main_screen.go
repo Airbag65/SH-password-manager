@@ -15,18 +15,44 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+type field struct {
+	Submition string
+	Field     textinput.Model
+}
+
 type mainScreenModel struct {
-	Hosts        []string
-	HostIndex    *int
-	CurrentFocus *int
-	Width        int
+	Hosts                   []string
+	HostIndex               *int
+	CurrentNewPasswordField *int
+	CurrentFocus            *int
+	NewPasswordInputs       []field
+	Width                   int
 }
 
 func NewMainScreenModel() *mainScreenModel {
-	return &mainScreenModel{
-		CurrentFocus: new(int),
-		HostIndex:    new(int),
+	model := &mainScreenModel{
+		CurrentFocus:            new(int),
+		HostIndex:               new(int),
+		CurrentNewPasswordField: new(int),
+		NewPasswordInputs:       make([]field, 2),
 	}
+
+	var input textinput.Model
+	for i := range model.NewPasswordInputs {
+		input = textinput.New()
+		input.Cursor.Style = art.CursorStyle
+		input.CharLimit = 100
+
+		switch i {
+		case 0:
+			input.Focus()
+			input.PromptStyle = art.FocusedStyle
+			input.TextStyle = art.FocusedStyle
+		}
+		model.NewPasswordInputs[i].Field = input
+	}
+
+	return model
 }
 
 func GenerateHosts() []string {
@@ -72,18 +98,8 @@ func (model mainScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "ctrl+x", "q", "Q":
+		case "ctrl+c", "ctrl+x":
 			return model, tea.Quit
-		case "s", "S":
-			err := auth.SignOut()
-			if err != nil {
-				return model, nil
-			}
-			return model, tea.Quit
-		case "l", "L":
-			*model.CurrentFocus = 0
-		case "n", "N":
-			*model.CurrentFocus = 1
 		case "tab", "shift+tab":
 			s := msg.String()
 			if s == "tab" {
@@ -98,6 +114,20 @@ func (model mainScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "enter":
 			switch *model.CurrentFocus {
+			case 1:
+				if *model.CurrentNewPasswordField == 2 {
+					err := model.CreateNewPassword(model.NewPasswordInputs[0].Submition, model.NewPasswordInputs[1].Submition)
+					if err != nil {
+						return model, tea.Quit
+					}
+					model.NewPasswordInputs[0].Submition = ""
+					model.NewPasswordInputs[1].Submition = ""
+					model.NewPasswordInputs[0].Field.SetValue("")
+					model.NewPasswordInputs[1].Field.SetValue("")
+					*model.CurrentFocus = 0
+					return model, nil
+				}
+
 			case 2:
 				err := auth.SignOut()
 				if err != nil {
@@ -108,13 +138,41 @@ func (model mainScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return model, tea.Quit
 			}
 		case "j", "J", "down", "k", "K", "up":
-			if *model.CurrentFocus == 0 {
-				s := msg.String()
+			s := msg.String()
+			switch *model.CurrentFocus {
+			case 0:
 				switch s {
 				case "j", "J", "down":
 					*model.HostIndex++
 				case "k", "K", "up":
 					*model.HostIndex--
+				}
+			case 1:
+				switch s {
+				case "down":
+					*model.CurrentNewPasswordField++
+				case "up":
+					*model.CurrentNewPasswordField--
+				}
+
+				if *model.CurrentNewPasswordField > 2 {
+					*model.CurrentNewPasswordField = 0
+				} else if *model.CurrentNewPasswordField < 0 {
+					*model.CurrentNewPasswordField = 2
+				}
+				cmds := make([]tea.Cmd, len(model.NewPasswordInputs))
+				for i := 0; i <= len(model.NewPasswordInputs)-1; i++ {
+					if i == *model.CurrentNewPasswordField {
+
+						cmds[i] = model.NewPasswordInputs[i].Field.Focus()
+						model.NewPasswordInputs[i].Field.PromptStyle = art.FocusedStyle
+						model.NewPasswordInputs[i].Field.TextStyle = art.FocusedStyle
+						continue
+					}
+
+					model.NewPasswordInputs[i].Field.Blur()
+					model.NewPasswordInputs[i].Field.PromptStyle = art.NoStyle
+					model.NewPasswordInputs[i].Field.TextStyle = art.NoStyle
 				}
 
 			}
@@ -123,7 +181,19 @@ func (model mainScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		model.Width = msg.Width
 	}
 
-	return model, nil
+	cmd := model.updateInputs(msg)
+
+	return model, cmd
+}
+
+func (model *mainScreenModel) updateInputs(msg tea.Msg) tea.Cmd {
+	cmds := make([]tea.Cmd, len(model.NewPasswordInputs))
+	for i := range model.NewPasswordInputs {
+		model.NewPasswordInputs[i].Field, cmds[i] = model.NewPasswordInputs[i].Field.Update(msg)
+		model.NewPasswordInputs[i].Submition = model.NewPasswordInputs[i].Field.Value()
+	}
+
+	return tea.Batch(cmds...)
 }
 
 func (model *mainScreenModel) ViewHosts() string {
@@ -193,7 +263,7 @@ func (model mainScreenModel) View() string {
 		pageString = "Press ENTER to quit passport"
 	}
 
-	fmt.Fprintf(&builder, "\n[l] %s\t\t[n] %s\t\t[s] %s\t\t[q] %s\n",
+	fmt.Fprintf(&builder, "\n%s\t\t%s\t\t%s\t\t%s\n",
 		*listButton,
 		*newPasswordButton,
 		*signOutButton,

@@ -20,7 +20,7 @@ build:
 	@mkdir -p target/bin
 	@echo "Building project"
 	@go mod tidy
-	@go build -o ./target/bin/passport
+	@go build -o ./target/bin/passport-tui
 
 .PHONY: run
 run: clean build

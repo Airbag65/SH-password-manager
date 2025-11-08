@@ -3,6 +3,7 @@ package main
 import (
 	"SH-password-manager/db"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 )
@@ -67,6 +68,7 @@ func (h *UploadNewPasswordHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+
 	var request UploadNewPasswordRequest
 
 	if r.Header.Get("Content-Type") != "application/json" {
@@ -74,6 +76,7 @@ func (h *UploadNewPasswordHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		w.Write([]byte("Bad Request"))
 		return
 	}
+	fmt.Println("Got A req")
 
 	tokenHeader := r.Header.Get("Authorization")
 	if tokenHeader == "" {

@@ -195,6 +195,7 @@ func AddNewPassord(userId int, password, hostName string) error {
 		return err
 	}
 
+	fmt.Println(password)
 	_, err = statement.Exec(userId, password, hostName)
 	if err != nil {
 		return err

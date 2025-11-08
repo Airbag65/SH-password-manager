@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"pwd-manager-tui/artistics"
 	"pwd-manager-tui/auth"
 	"pwd-manager-tui/enc"
 	"slices"
@@ -49,6 +50,7 @@ func (model *mainScreenModel) CreateNewPassword(hostName, password string) error
 
 	authToken := auth.GetSavedData().AuthToken
 
+	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authToken))
 	
 	response, err := auth.Client.Do(request)
@@ -57,7 +59,7 @@ func (model *mainScreenModel) CreateNewPassword(hostName, password string) error
 	}
 
 	if response.StatusCode != 200 {
-		return fmt.Errorf("Failed to create new password")
+		return fmt.Errorf("Failed to create new password, statusCode was: %d\n", response.StatusCode)
 	}
 
 	return nil
@@ -66,6 +68,17 @@ func (model *mainScreenModel) CreateNewPassword(hostName, password string) error
 func (model *mainScreenModel) NewPasswordView() string {
 	var builder strings.Builder
 	
-	builder.WriteString("New Password whoop whoop")
+
+	builder.WriteString("Add new password\n")
+	builder.WriteString("\nHost:\n")
+	builder.WriteString(model.NewPasswordInputs[0].Field.View())
+	builder.WriteString("\nPassword:\n")
+	builder.WriteString(model.NewPasswordInputs[1].Field.View())
+	button := &artistics.BlurredNewPasswordButton
+	if *model.CurrentNewPasswordField == 2 {
+		button = &artistics.FocusedNewPasswordButton
+	}
+	fmt.Fprintf(&builder, "\n\n%s\n\n", *button)
+
 	return builder.String()
 }
