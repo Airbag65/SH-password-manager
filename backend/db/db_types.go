@@ -46,3 +46,12 @@ func DbEntryToHostNames(rows *sql.Rows) []string {
 	}
 	return hostNames
 }
+
+func DbEntryToPassword(row *sql.Rows) string {
+	var password string
+	for row.Next() {
+		row.Scan(&password)
+	}
+
+	return password
+}

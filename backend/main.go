@@ -66,6 +66,7 @@ func main() {
 	// PWD handlers
 	server.Handle("/pwd/getHosts", &GetPasswordHostsHandler{})
 	server.Handle("/pwd/new", &UploadNewPasswordHandler{})
+	server.Handle("/pwd/get", &GetPasswordValueHandler{})
 
 
 	handler := cors.Default().Handler(server)

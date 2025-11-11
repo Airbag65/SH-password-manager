@@ -228,3 +228,27 @@ func GetHostNames(userId int) []string {
 
 	return DbEntryToHostNames(row)
 }
+
+func GetPassword(userId int, hostname string) (string, error) {
+	database := CreateConnection()
+	if database == nil {
+		log.Fatal("Could not connect to './db/database.db'")
+		return "", fmt.Errorf("Could not open database")
+	}
+
+	defer func(){
+		if err := database.Close(); err != nil {
+			log.Fatal("Could not close database")
+		}
+	}()
+
+	getPasswordQuery := fmt.Sprintf("SELECT password FROM password WHERE user_id = %d AND host_name = %s;", userId, hostname)
+
+	row, err := database.Query(getPasswordQuery)
+	if err != nil {
+		log.Fatalf("Could not get host names for user: %d", userId)
+		return "", err
+	}
+
+	return DbEntryToPassword(row), nil
+}

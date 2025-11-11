@@ -48,6 +48,7 @@ func (h *GetPasswordHostsHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	w.Write(bytes)
 }
 
+
 type UploadNewPasswordHandler struct{}
 
 type UploadNewPasswordRequest struct {
@@ -101,4 +102,47 @@ func (h *UploadNewPasswordHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 
 	w.WriteHeader(200)
 	w.Write([]byte("OK"))
+}
+
+
+type GetPasswordValueHandler struct {}
+
+type GetPasswordRequest struct {
+	HostName string `json:"host_name"`
+}
+
+func (h *GetPasswordValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		MethodNotAllowed(w)
+		return
+	}
+
+	tokenHeader := r.Header.Get("Authorization")
+	if tokenHeader == "" {
+		BadRequest(w)
+		return
+	}
+
+	bearer := strings.Split(tokenHeader, " ")[0]
+	if bearer != "Bearer" {
+		BadRequest(w)
+		return
+	}
+	token := strings.Split(tokenHeader, " ")[1]
+
+	userInformation := db.GetUserWithAuthToken(token)
+	if userInformation == nil {
+		Unauthorized(w)
+		return
+	}
+
+	var request GetPasswordRequest
+
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		BadRequest(w)
+		return
+	}
+
+
 }
