@@ -3,7 +3,6 @@ package main
 import (
 	"SH-password-manager/db"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 )
@@ -14,30 +13,26 @@ type GetPasswordHostsHandler struct{}
 
 func (h *GetPasswordHostsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		w.WriteHeader(405)
-		w.Write([]byte("Method Not Allowed"))
+		MethodNotAllowed(w)
 		return
 	}
 
 	tokenHeader := r.Header.Get("Authorization")
 	if tokenHeader == "" {
-		w.WriteHeader(400)
-		w.Write([]byte("Bad Request"))
+		BadRequest(w)
 		return
 	}
 
 	bearer := strings.Split(tokenHeader, " ")[0]
 	if bearer != "Bearer" {
-		w.WriteHeader(400)
-		w.Write([]byte("Bad Request"))
+		BadRequest(w)
 		return
 	}
 	token := strings.Split(tokenHeader, " ")[1]
 
 	userInformation := db.GetUserWithAuthToken(token)
 	if userInformation == nil {
-		w.WriteHeader(401)
-		w.Write([]byte("Unauthorized"))
+		Unauthorized(w)
 		return
 	}
 
@@ -45,8 +40,7 @@ func (h *GetPasswordHostsHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 
 	bytes, err := json.Marshal(names)
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("Internal Server Error"))
+		InternalServerError(w)
 		return
 	}
 
@@ -63,8 +57,7 @@ type UploadNewPasswordRequest struct {
 
 func (h *UploadNewPasswordHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(405)
-		w.Write([]byte("Method Not Allowed"))
+		MethodNotAllowed(w)
 		return
 	}
 
@@ -72,44 +65,37 @@ func (h *UploadNewPasswordHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	var request UploadNewPasswordRequest
 
 	if r.Header.Get("Content-Type") != "application/json" {
-		w.WriteHeader(400)
-		w.Write([]byte("Bad Request"))
+		BadRequest(w)
 		return
 	}
-	fmt.Println("Got A req")
 
 	tokenHeader := r.Header.Get("Authorization")
 	if tokenHeader == "" {
-		w.WriteHeader(400)
-		w.Write([]byte("Bad Request"))
+		BadRequest(w)
 		return
 	}
 
 	bearer := strings.Split(tokenHeader, " ")[0]
 	if bearer != "Bearer" {
-		w.WriteHeader(400)
-		w.Write([]byte("Bad Request"))
+		BadRequest(w)
 		return
 	}
 	token := strings.Split(tokenHeader, " ")[1]
 
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte("Bad Request"))
+		BadRequest(w)
 		return
 	}
 	userInformation := db.GetUserWithAuthToken(token)
 	if userInformation == nil {
-		w.WriteHeader(401)
-		w.Write([]byte("Unauthorized"))
+		Unauthorized(w)
 		return
 	}
 
 	err = db.AddNewPassord(userInformation.Id, request.Password, request.HostName)
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("Internal Server Error"))
+		InternalServerError(w)
 		return
 	}
 

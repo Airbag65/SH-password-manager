@@ -41,14 +41,12 @@ type LoginHandler struct{}
 
 func (l *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(405)
-		w.Write([]byte("Method Not Allowed"))
+		MethodNotAllowed(w)
 		return
 	}
 
 	if r.Header.Get("Content-Type") != "application/json" {
-		w.WriteHeader(400)
-		w.Write([]byte("Bad Request"))
+		BadRequest(w)
 		return
 	}
 
@@ -56,15 +54,13 @@ func (l *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte("Bad Request"))
+		BadRequest(w)
 		return
 	}
 
 	userInformation := db.GetUserWithEmail(request.Email)
 	if userInformation == nil {
-		w.WriteHeader(404)
-		w.Write([]byte("User not found"))
+		NotFound(w)
 		return
 	}
 
@@ -75,16 +71,14 @@ func (l *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if encryptPassword(request.Password) != userInformation.Password {
-		w.WriteHeader(401)
-		w.Write([]byte("Unauthorized"))
+		Unauthorized(w)
 		return
 	}
 
 	pemString, err := enc.PEMFileToString("publicKey")
 	if err != nil {
 		log.Printf("Error: %v", err)	
-		w.WriteHeader(500)
-		w.Write([]byte("Internal server error"))
+		InternalServerError(w)
 		return
 	}
 
@@ -100,8 +94,7 @@ func (l *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		log.Printf("Error: %v", err)	
-		w.WriteHeader(500)
-		w.Write([]byte("Internal server error"))
+		InternalServerError(w)
 		return
 	}
 
@@ -132,14 +125,12 @@ type ValidateTokenResponse struct {
 
 func (v *ValidateTokenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(405)
-		w.Write([]byte("Method Not Allowed"))
+		MethodNotAllowed(w)
 		return
 	}
 
 	if r.Header.Get("Content-Type") != "application/json" {
-		w.WriteHeader(400)
-		w.Write([]byte("Bad Request"))
+		BadRequest(w)
 		return
 	}
 
@@ -147,22 +138,19 @@ func (v *ValidateTokenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte("Bad Request"))
+		BadRequest(w)
 		return
 	}
 
 	userInformation := db.GetUserWithAuthToken(request.AuthToken)
 	if userInformation == nil {
-		w.WriteHeader(401)
-		w.Write([]byte("Unauthorized"))
+		Unauthorized(w)
 		return
 	}
 
 	pemString, err := enc.PEMFileToString("publicKey")
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("Internal Server Error"))
+		InternalServerError(w)
 		return
 	}
 
@@ -175,8 +163,7 @@ func (v *ValidateTokenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		PemString:       pemString,
 	})
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("Internal server error"))
+		InternalServerError(w)
 		return
 	}
 	w.WriteHeader(200)
@@ -200,14 +187,12 @@ type SignOutResponse struct {
 
 func (s *SignOutHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
-		w.WriteHeader(405)
-		w.Write([]byte("Method Not Allowed"))
+		MethodNotAllowed(w)
 		return
 	}
 
 	if r.Header.Get("Content-Type") != "application/json" {
-		w.WriteHeader(400)
-		w.Write([]byte("Bad Request"))
+		BadRequest(w)
 		return
 	}
 
@@ -215,8 +200,7 @@ func (s *SignOutHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte("Bad Request"))
+		BadRequest(w)
 		return
 	}
 
@@ -224,16 +208,15 @@ func (s *SignOutHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		ResponseCode:    200,
 		ResponseMessage: "OK",
 	})
+
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("Internal server error"))
+		InternalServerError(w)
 		return
 	}
 
 	user := db.GetUserWithEmail(request.Email)
 	if user == nil {
-		w.WriteHeader(404)
-		w.Write([]byte("Not found"))
+		NotFound(w)
 		return
 	}
 
@@ -272,14 +255,12 @@ type CreateNewUserResponse struct {
 
 func (c *CreateNewUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(405)
-		w.Write([]byte("Method Not Allowed"))
+		MethodNotAllowed(w)
 		return
 	}
 
 	if r.Header.Get("Content-Type") != "application/json" {
-		w.WriteHeader(400)
-		w.Write([]byte("Bad Request"))
+		BadRequest(w)
 		return
 	}
 
@@ -287,8 +268,7 @@ func (c *CreateNewUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte("Bad Request"))
+		BadRequest(w)
 		return
 	}
 
@@ -301,8 +281,7 @@ func (c *CreateNewUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 
 	pemString, err := enc.PEMFileToString("publicKey")
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("Internal Server Error"))
+		InternalServerError(w)
 		return
 	}
 
