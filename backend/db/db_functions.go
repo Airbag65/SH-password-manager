@@ -1,10 +1,26 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"time"
 )
+
+type store struct {
+	db *sql.DB
+}
+
+func (s *store) Init() error {
+	database, err := sql.Open("sqlite3", "./db/database.db")
+	if err != nil {
+		log.Fatal("Could not connect to database")
+		return err
+	}
+	log.Println("Connected to './db/database.db'")
+	s.db = database
+	return nil
+}
 
 func GetUserWithEmail(userEmail string) *User {
 	database := CreateConnection()
