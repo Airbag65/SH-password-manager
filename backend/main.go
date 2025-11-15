@@ -12,7 +12,12 @@ import (
 	"github.com/rs/cors"
 )
 
+var s db.Store
+
 func main() {
+	if err := s.Init(); err != nil {
+		panic("Could not initialize database")
+	}
 	f, err := os.OpenFile("target/log/file.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666) 
 	if err != nil {
 		fmt.Printf("error opening file: %v", err)
@@ -30,8 +35,8 @@ func main() {
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case "migrate":
-			db.Migrate()
-			fmt.Println(db.GetUserWithEmail("normananton03@gmail.com").ToString())
+			s.Migrate()
+			fmt.Println(s.GetUserWithEmail("normananton03@gmail.com").ToString())
 			return
 		case "keygen":
 			fmt.Println("Generating Keys")

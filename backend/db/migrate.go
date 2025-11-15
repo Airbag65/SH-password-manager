@@ -18,7 +18,7 @@ func CreateConnection() *sql.DB {
 	return database
 }
 
-func Migrate() {
+func (s *Store) Migrate() {
 	log.Println("Migrating database")
 	os.Remove("./db/database.db")
 
@@ -26,14 +26,18 @@ func Migrate() {
 	if err != nil {
 		return
 	}
-	file.Close()
-	database := CreateConnection()
-	if database == nil {
+	if err := s.Init(); err != nil {
 		return
 	}
-	defer database.Close()
-	createTables(database)
-	insertDefault(database)
+	file.Close()
+
+	// database := CreateConnection()
+	// if database == nil {
+	// 	return
+	// }
+	// defer database.Close()
+	createTables(s.db)
+	insertDefault(s.db)
 	log.Println("Migration finished")
 }
 

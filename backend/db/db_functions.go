@@ -7,11 +7,11 @@ import (
 	"time"
 )
 
-type store struct {
+type Store struct {
 	db *sql.DB
 }
 
-func (s *store) Init() error {
+func (s *Store) Init() error {
 	database, err := sql.Open("sqlite3", "./db/database.db")
 	if err != nil {
 		log.Fatal("Could not connect to database")
@@ -22,26 +22,14 @@ func (s *store) Init() error {
 	return nil
 }
 
-func GetUserWithEmail(userEmail string) *User {
-	database := CreateConnection()
-	if database == nil {
-		log.Fatal("Could not connect to './db/database.db'")
-		return nil
-	}
-
-	defer func(){
-		if err := database.Close(); err != nil {
-			log.Fatal("Could not close database")
-		}
-	}()
-
-	row, err := database.Query(fmt.Sprintf("SELECT * FROM user WHERE email = '%s';", userEmail))
+func (s *Store) GetUserWithEmail(userEmail string) *User {
+	row, err := s.db.Query(fmt.Sprintf("SELECT * FROM user WHERE email = '%s';", userEmail))
 	if err != nil {
 		log.Fatalf("Could not retrieve user with email '%s'", userEmail)
 		return nil
 	}
 
-	defer func(){
+	defer func() {
 		if err := row.Close(); err != nil {
 			log.Fatal("Could not close database row")
 		}
@@ -54,27 +42,14 @@ func GetUserWithEmail(userEmail string) *User {
 	return user
 }
 
-func GetUserWithAuthToken(authToken string) *User {
-	database := CreateConnection()
-	if database == nil {
-		log.Fatal("Could not connect to './db/database.db'")
-		return nil
-	}
-
-	defer func(){
-		if err := database.Close(); err != nil {
-			log.Fatal("Could not close database")
-		}
-	}()
-
-
-	row, err := database.Query(fmt.Sprintf("SELECT * FROM user where auth_token = '%s';", authToken))
+func (s *Store) GetUserWithAuthToken(authToken string) *User {
+	row, err := s.db.Query(fmt.Sprintf("SELECT * FROM user where auth_token = '%s';", authToken))
 	if err != nil {
 		log.Fatalf("Could not retrieve user with auth_token '%s'", authToken)
 		return nil
 	}
 
-	defer func(){
+	defer func() {
 		if err := row.Close(); err != nil {
 			log.Fatal("Could not close database row")
 		}
@@ -88,33 +63,21 @@ func GetUserWithAuthToken(authToken string) *User {
 
 	if selectedUser.TokenExpiryDate <= time.Now().Unix() {
 		log.Println("auth_token not valid")
-		RemoveAuthToken(selectedUser.Email)
+		s.RemoveAuthToken(selectedUser.Email)
 		return nil
 	}
 
 	return selectedUser
 }
 
-func SetAuthToken(userEmail, authToken string) {
-	database := CreateConnection()
-	if database == nil {
-		log.Fatal("Could not connect to './db/database.db'")
-		return
-	}
-
-	defer func(){
-		if err := database.Close(); err != nil {
-			log.Fatal("Could not close database")
-		}
-	}()
-
+func (s *Store) SetAuthToken(userEmail, authToken string) {
 	expiryDate := time.Now().AddDate(0, 1, 0).Unix()
 	updateUserQuery := fmt.Sprintf(`UPDATE user
     SET auth_token = '%s',
         token_expiry_date = %d
     WHERE 
     email = '%s';`, authToken, expiryDate, userEmail)
-	statement, err := database.Prepare(updateUserQuery)
+	statement, err := s.db.Prepare(updateUserQuery)
 	if err != nil {
 		log.Fatalf("Could not update AUTH on '%s'(SetAuthToken)", userEmail)
 		return
@@ -123,20 +86,8 @@ func SetAuthToken(userEmail, authToken string) {
 	log.Printf("Updated AUTH on '%s'", userEmail)
 }
 
-func RemoveAuthToken(userEmail string) {
-	database := CreateConnection()
-	if database == nil {
-		log.Fatal("Could not connect to './db/database.db'")
-		return
-	}
-
-	defer func(){
-		if err := database.Close(); err != nil {
-			log.Fatal("Could not close database")
-		}
-	}()
-
-	user := GetUserWithEmail(userEmail)
+func (s *Store) RemoveAuthToken(userEmail string) {
+	user := s.GetUserWithEmail(userEmail)
 	if user == nil {
 		log.Fatal("User not found(RemoveAuthToken)")
 		return
@@ -147,7 +98,7 @@ func RemoveAuthToken(userEmail string) {
     WHERE
     email = '%s';`, userEmail)
 
-	statement, err := database.Prepare(removeTokenQuery)
+	statement, err := s.db.Prepare(removeTokenQuery)
 	if err != nil {
 		log.Fatalf("Could not remove AUTH token on '%s'", userEmail)
 		return
@@ -156,19 +107,7 @@ func RemoveAuthToken(userEmail string) {
 	log.Printf("Removed AUTH token on '%s'", userEmail)
 }
 
-func CreateNewUser(email, password, name, surname string) {
-	database := CreateConnection()
-	if database == nil {
-		log.Fatal("Could not connect to './db/database.db'")
-		return
-	}
-
-	defer func(){
-		if err := database.Close(); err != nil {
-			log.Fatal("Could not close database")
-		}
-	}()
-
+func (s *Store) CreateNewUser(email, password, name, surname string) {
 	createNewUserQuery := `INSERT INTO user(
         email, 
         password, 
@@ -178,7 +117,7 @@ func CreateNewUser(email, password, name, surname string) {
         token_expiry_date) 
         VALUES(?,?,?,?,?,?);`
 	log.Println("Inserting new user")
-	statement, err := database.Prepare(createNewUserQuery)
+	statement, err := s.db.Prepare(createNewUserQuery)
 	if err != nil {
 		log.Fatalf("Error inserting new user '%s'", email)
 		return
@@ -187,25 +126,14 @@ func CreateNewUser(email, password, name, surname string) {
 	log.Printf("Created user '%s %s' - '%s'", name, surname, email)
 }
 
-func AddNewPassord(userId int, password, hostName string) error {
-	database := CreateConnection()
-	if database == nil {
-		log.Fatal("Could not connect to './db/database.db'")
-		return nil
-	}
-
-	defer func(){
-		if err := database.Close(); err != nil {
-			log.Fatal("Could not close database")
-		}
-	}()
+func (s *Store) AddNewPassord(userId int, password, hostName string) error {
 	insertNewPasswordQuery := `INSERT INTO password(
 		user_id,
 		password,
 		host_name)
-		VALUES(?,?,?);`	
+		VALUES(?,?,?);`
 	log.Printf("Inserting new password for user '%d'", userId)
-	statement, err := database.Prepare(insertNewPasswordQuery)
+	statement, err := s.db.Prepare(insertNewPasswordQuery)
 	if err != nil {
 		log.Fatalf("Error inserting new password for user '%d'", userId)
 		return err
@@ -220,47 +148,22 @@ func AddNewPassord(userId int, password, hostName string) error {
 	return nil
 }
 
-func GetHostNames(userId int) []string {
-	database := CreateConnection()
-	if database == nil {
-		log.Fatal("Could not connect to './db/database.db'")
-		return nil
-	}
-
-	defer func(){
-		if err := database.Close(); err != nil {
-			log.Fatal("Could not close database")
-		}
-	}()
-
+func (s *Store) GetHostNames(userId int) []string {
 	getHostsQuery := fmt.Sprintf("SELECT host_name FROM password where user_id = %d", userId)
-	
-	row, err := database.Query(getHostsQuery)
+
+	row, err := s.db.Query(getHostsQuery)
 	if err != nil {
 		log.Fatalf("Could not get host names for user: %d", userId)
 		return nil
 	}
 
-
 	return DbEntryToHostNames(row)
 }
 
-func GetPassword(userId int, hostname string) (string, error) {
-	database := CreateConnection()
-	if database == nil {
-		log.Fatal("Could not connect to './db/database.db'")
-		return "", fmt.Errorf("Could not open database")
-	}
-
-	defer func(){
-		if err := database.Close(); err != nil {
-			log.Fatal("Could not close database")
-		}
-	}()
-
+func (s *Store) GetPassword(userId int, hostname string) (string, error) {
 	getPasswordQuery := fmt.Sprintf("SELECT password FROM password WHERE user_id = %d AND host_name = %s;", userId, hostname)
 
-	row, err := database.Query(getPasswordQuery)
+	row, err := s.db.Query(getPasswordQuery)
 	if err != nil {
 		log.Fatalf("Could not get host names for user: %d", userId)
 		return "", err

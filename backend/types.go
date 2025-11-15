@@ -1,0 +1,85 @@
+package main
+
+type HomeHandler struct{}
+
+
+/*
+   --- LOGIN ---
+*/
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type LoginResponse struct {
+	ResponseCode    int    `json:"response_code"`
+	ResponseMessage string `json:"response_message"`
+	AuthToken       string `json:"auth_token"`
+	Name            string `json:"name"`
+	Surname         string `json:"surname"`
+	Email           string `json:"email"`
+	PemString       string `json:"pem_string"`
+}
+
+type LoginHandler struct{}
+
+
+/*
+   --- VALIDATE TOKEN ---
+*/
+type ValidateTokenHandler struct{}
+
+type ValidateTokenRequest struct {
+	AuthToken string `json:"auth_token"`
+}
+
+type ValidateTokenResponse struct {
+	ResponseCode    int    `json:"response_code"`
+	ResponseMessage string `json:"response_message"`
+	Name            string `json:"name"`
+	Surname         string `json:"surname"`
+	Email           string `json:"email"`
+	PemString       string `json:"pem_string"`
+}
+
+
+
+/*
+   --- SIGN OUT ---
+*/
+
+type SignOutHandler struct{}
+
+type SignOutRequest struct {
+	Email string `json:"email"`
+}
+
+type SignOutResponse struct {
+	ResponseCode    int    `json:"response_code"`
+	ResponseMessage string `json:"response_message"`
+}
+
+
+
+/*
+--- CREATE NEW USER ---
+*/
+type CreateNewUserHandler struct{}
+
+type CreateNewUserRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Name     string `json:"name"`
+	Surname  string `json:"surname"`
+}
+
+type CreateNewUserResponse struct {
+	ResponseCode    int    `json:"response_code"`
+	ResponseMessage string `json:"response_message"`
+	AuthToken       string `json:"auth_token"`
+	Name            string `json:"name"`
+	Surname         string `json:"surname"`
+	PemString       string `json:"pem_string"`
+}
+
+

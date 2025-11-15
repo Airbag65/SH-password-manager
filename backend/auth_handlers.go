@@ -1,7 +1,6 @@
 package main
 
 import (
-	"SH-password-manager/db"
 	"SH-password-manager/enc"
 	"encoding/json"
 	"fmt"
@@ -11,33 +10,11 @@ import (
 	"github.com/google/uuid"
 )
 
-type HomeHandler struct{}
-
 func (h *HomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 	w.Write([]byte("OK!\n"))
 }
 
-/*
-   --- LOGIN ---
-*/
-
-type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-type LoginResponse struct {
-	ResponseCode    int    `json:"response_code"`
-	ResponseMessage string `json:"response_message"`
-	AuthToken       string `json:"auth_token"`
-	Name            string `json:"name"`
-	Surname         string `json:"surname"`
-	Email           string `json:"email"`
-	PemString       string `json:"pem_string"`
-}
-
-type LoginHandler struct{}
 
 func (l *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -58,7 +35,7 @@ func (l *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userInformation := db.GetUserWithEmail(request.Email)
+	userInformation := s.GetUserWithEmail(request.Email)
 	if userInformation == nil {
 		NotFound(w)
 		return
@@ -83,7 +60,7 @@ func (l *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newAuthToken := fmt.Sprintf("%s%s", uuid.New().String(), uuid.New().String())
-	response, err := json.Marshal(&LoginResponse{
+	loginResponse := &LoginResponse{
 		ResponseCode:    200,
 		ResponseMessage: "OK",
 		AuthToken:       newAuthToken,
@@ -91,37 +68,11 @@ func (l *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Surname:         userInformation.Surname,
 		Email:           userInformation.Email,
 		PemString:       pemString,
-	})
-	if err != nil {
-		log.Printf("Error: %v", err)	
-		InternalServerError(w)
-		return
 	}
-
-	db.SetAuthToken(request.Email, newAuthToken)
-
-	w.WriteHeader(200)
-	w.Write(response)
+	s.SetAuthToken(request.Email, newAuthToken)
+	WriteJSON(w, loginResponse)
 }
 
-/*
-   --- VALIDATE TOKEN ---
-*/
-
-type ValidateTokenHandler struct{}
-
-type ValidateTokenRequest struct {
-	AuthToken string `json:"auth_token"`
-}
-
-type ValidateTokenResponse struct {
-	ResponseCode    int    `json:"response_code"`
-	ResponseMessage string `json:"response_message"`
-	Name            string `json:"name"`
-	Surname         string `json:"surname"`
-	Email           string `json:"email"`
-	PemString       string `json:"pem_string"`
-}
 
 func (v *ValidateTokenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -142,7 +93,7 @@ func (v *ValidateTokenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userInformation := db.GetUserWithAuthToken(request.AuthToken)
+	userInformation := s.GetUserWithAuthToken(request.AuthToken)
 	if userInformation == nil {
 		Unauthorized(w)
 		return
@@ -154,38 +105,18 @@ func (v *ValidateTokenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	response, err := json.Marshal(&ValidateTokenResponse{
+	tokenResponse := &ValidateTokenResponse{
 		ResponseCode:    200,
 		ResponseMessage: "OK",
 		Name:            userInformation.Name,
 		Surname:         userInformation.Surname,
 		Email:           userInformation.Email,
 		PemString:       pemString,
-	})
-	if err != nil {
-		InternalServerError(w)
-		return
 	}
-	w.WriteHeader(200)
-	w.Write(response)
+	WriteJSON(w, tokenResponse)
 }
 
-/*
-   --- SIGN OUT ---
-*/
-
-type SignOutHandler struct{}
-
-type SignOutRequest struct {
-	Email string `json:"email"`
-}
-
-type SignOutResponse struct {
-	ResponseCode    int    `json:"response_code"`
-	ResponseMessage string `json:"response_message"`
-}
-
-func (s *SignOutHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *SignOutHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
 		MethodNotAllowed(w)
 		return
@@ -204,17 +135,7 @@ func (s *SignOutHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := json.Marshal(&SignOutResponse{
-		ResponseCode:    200,
-		ResponseMessage: "OK",
-	})
-
-	if err != nil {
-		InternalServerError(w)
-		return
-	}
-
-	user := db.GetUserWithEmail(request.Email)
+	user := s.GetUserWithEmail(request.Email)
 	if user == nil {
 		NotFound(w)
 		return
@@ -226,31 +147,12 @@ func (s *SignOutHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db.RemoveAuthToken(request.Email)
+	s.RemoveAuthToken(request.Email)
 
-	w.WriteHeader(200)
-	w.Write(response)
-}
-
-/*
---- CREATE NEW USER ---
-*/
-type CreateNewUserHandler struct{}
-
-type CreateNewUserRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Name     string `json:"name"`
-	Surname  string `json:"surname"`
-}
-
-type CreateNewUserResponse struct {
-	ResponseCode    int    `json:"response_code"`
-	ResponseMessage string `json:"response_message"`
-	AuthToken       string `json:"auth_token"`
-	Name            string `json:"name"`
-	Surname         string `json:"surname"`
-	PemString       string `json:"pem_string"`
+	WriteJSON(w, SignOutResponse{
+		ResponseCode: 200,
+		ResponseMessage: "OK",
+	})
 }
 
 func (c *CreateNewUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -272,7 +174,7 @@ func (c *CreateNewUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	existingUser := db.GetUserWithEmail(request.Email)
+	existingUser := s.GetUserWithEmail(request.Email)
 	if existingUser != nil {
 		w.WriteHeader(418)
 		w.Write([]byte("User already exists"))
@@ -286,17 +188,18 @@ func (c *CreateNewUserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 
 	encPwd := encryptPassword(request.Password)
-	db.CreateNewUser(request.Email, encPwd, request.Name, request.Surname)
+	
+	s.CreateNewUser(request.Email, encPwd, request.Name, request.Surname)
 	newAuthToken := fmt.Sprintf("%s%s", uuid.New().String(), uuid.New().String())
-	response, err := json.Marshal(&CreateNewUserResponse{
+
+	newUserResponse := &CreateNewUserResponse{
 		ResponseCode:    200,
 		ResponseMessage: "OK",
 		AuthToken:       newAuthToken,
 		Name:            request.Name,
 		Surname:         request.Surname,
 		PemString:       pemString,
-	})
-	db.SetAuthToken(request.Email, newAuthToken)
-	w.WriteHeader(200)
-	w.Write(response)
+	}
+	s.SetAuthToken(request.Email, newAuthToken)
+	WriteJSON(w, newUserResponse)
 }

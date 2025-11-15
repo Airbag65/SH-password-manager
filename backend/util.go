@@ -1,6 +1,9 @@
 package main
 
-import "net/http"
+import (
+	"encoding/json"
+	"net/http"
+)
 
 func BadRequest(w http.ResponseWriter) {
 	w.WriteHeader(400)
@@ -25,4 +28,10 @@ func MethodNotAllowed(w http.ResponseWriter) {
 func Unauthorized(w http.ResponseWriter) {
 	w.WriteHeader(401)
 	w.Write([]byte("Unauthorized"))
+}
+
+func WriteJSON(w http.ResponseWriter, v any) error {
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(200)
+	return json.NewEncoder(w).Encode(v)
 }

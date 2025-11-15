@@ -1,7 +1,6 @@
 package main
 
 import (
-	"SH-password-manager/db"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -30,13 +29,13 @@ func (h *GetPasswordHostsHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	}
 	token := strings.Split(tokenHeader, " ")[1]
 
-	userInformation := db.GetUserWithAuthToken(token)
+	userInformation := s.GetUserWithAuthToken(token)
 	if userInformation == nil {
 		Unauthorized(w)
 		return
 	}
 
-	names := db.GetHostNames(userInformation.Id)
+	names := s.GetHostNames(userInformation.Id)
 
 	bytes, err := json.Marshal(names)
 	if err != nil {
@@ -88,13 +87,13 @@ func (h *UploadNewPasswordHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		BadRequest(w)
 		return
 	}
-	userInformation := db.GetUserWithAuthToken(token)
+	userInformation := s.GetUserWithAuthToken(token)
 	if userInformation == nil {
 		Unauthorized(w)
 		return
 	}
 
-	err = db.AddNewPassord(userInformation.Id, request.Password, request.HostName)
+	err = s.AddNewPassord(userInformation.Id, request.Password, request.HostName)
 	if err != nil {
 		InternalServerError(w)
 		return
@@ -130,7 +129,7 @@ func (h *GetPasswordValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	}
 	token := strings.Split(tokenHeader, " ")[1]
 
-	userInformation := db.GetUserWithAuthToken(token)
+	userInformation := s.GetUserWithAuthToken(token)
 	if userInformation == nil {
 		Unauthorized(w)
 		return
