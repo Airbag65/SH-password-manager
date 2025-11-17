@@ -1,14 +1,15 @@
 package main
 
 import (
+	"SH-password-manager/enc"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 )
 
 // 4673992a-f65c-4da8-99f0-fa630f54ed28ec0e1431-1674-4c32-a606-efdd160862c7
 
-type GetPasswordHostsHandler struct{}
 
 func (h *GetPasswordHostsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -37,30 +38,21 @@ func (h *GetPasswordHostsHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 
 	names := s.GetHostNames(userInformation.Id)
 
-	bytes, err := json.Marshal(names)
-	if err != nil {
-		InternalServerError(w)
-		return
-	}
-
-	w.WriteHeader(200)
-	w.Write(bytes)
+	// bytes, err := json.Marshal(names)
+	// if err != nil {
+	// 	InternalServerError(w)
+	// 	return
+	// }
+	WriteJSON(w, GetPasswordHostsResponse{Hosts: names})
 }
 
 
-type UploadNewPasswordHandler struct{}
-
-type UploadNewPasswordRequest struct {
-	HostName string `json:"host_name"`
-	Password string `json:"password"`
-}
 
 func (h *UploadNewPasswordHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		MethodNotAllowed(w)
 		return
 	}
-
 
 	var request UploadNewPasswordRequest
 
@@ -104,12 +96,6 @@ func (h *UploadNewPasswordHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 }
 
 
-type GetPasswordValueHandler struct {}
-
-type GetPasswordRequest struct {
-	HostName string `json:"host_name"`
-}
-
 func (h *GetPasswordValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
 		MethodNotAllowed(w)
@@ -142,6 +128,27 @@ func (h *GetPasswordValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 		BadRequest(w)
 		return
 	}
+	
+	encPassword, err := s.GetPassword(userInformation.Id, request.HostName)
+	if err != nil {
+		NotFound(w)
+		return
+	}
 
+	privatePemString, err := enc.PEMFileToString("privateKey")
+	if err != nil {
+		InternalServerError(w)
+		return
+	}
+	
+	privateKey := enc.PemStringToPrivateKey(privatePemString)
 
+	decPassword, err := enc.Decrypt([]byte(encPassword), privateKey)
+	if err != nil {
+		log.Printf("Error: %v", err)
+		InternalServerError(w)
+		return
+	}
+
+	WriteJSON(w, GetPasswordResonse{Password: decPassword})
 }

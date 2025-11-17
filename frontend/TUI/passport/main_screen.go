@@ -55,6 +55,11 @@ func NewMainScreenModel() *mainScreenModel {
 	return model
 }
 
+
+type Hosts struct {
+	Hosts []string `json:"hosts"`
+}
+
 func GenerateHosts() []string {
 
 	request, err := http.NewRequest("GET", "https://localhost:443/pwd/getHosts", bytes.NewBuffer([]byte{}))
@@ -80,14 +85,14 @@ func GenerateHosts() []string {
 		return []string{}
 	}
 
-	var res []string
+	var res Hosts
 
 	err = json.Unmarshal(buffer, &res)
 	if err != nil {
 		return []string{}
 	}
 
-	return res
+	return res.Hosts
 }
 
 func (model mainScreenModel) Init() tea.Cmd {

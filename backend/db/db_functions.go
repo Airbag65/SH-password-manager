@@ -135,11 +135,10 @@ func (s *Store) AddNewPassord(userId int, password, hostName string) error {
 	log.Printf("Inserting new password for user '%d'", userId)
 	statement, err := s.db.Prepare(insertNewPasswordQuery)
 	if err != nil {
-		log.Fatalf("Error inserting new password for user '%d'", userId)
+		log.Fatalf("Error inserting new password for user '%d' - %v", userId, err)
 		return err
 	}
 
-	fmt.Println(password)
 	_, err = statement.Exec(userId, password, hostName)
 	if err != nil {
 		return err
@@ -153,19 +152,24 @@ func (s *Store) GetHostNames(userId int) []string {
 
 	row, err := s.db.Query(getHostsQuery)
 	if err != nil {
-		log.Fatalf("Could not get host names for user: %d", userId)
-		return nil
+		log.Printf("Could not get host names for user: %d - %v", userId, err)
+		return []string{}
 	}
 
 	return DbEntryToHostNames(row)
 }
 
 func (s *Store) GetPassword(userId int, hostname string) (string, error) {
-	getPasswordQuery := fmt.Sprintf("SELECT password FROM password WHERE user_id = %d AND host_name = %s;", userId, hostname)
-
+	getPasswordQuery := fmt.Sprintf(`SELECT password 
+		FROM password 
+		WHERE 
+			user_id = %d
+		AND 
+			host_name = '%s';`, userId, hostname)
+	
 	row, err := s.db.Query(getPasswordQuery)
 	if err != nil {
-		log.Fatalf("Could not get host names for user: %d", userId)
+		log.Fatalf("Could not get host names for user: %d - %v", userId, err)
 		return "", err
 	}
 

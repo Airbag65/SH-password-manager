@@ -31,7 +31,7 @@ func Unauthorized(w http.ResponseWriter) {
 }
 
 func WriteJSON(w http.ResponseWriter, v any) error {
-	w.Header().Add("Content-Type", "application/json")
+	// w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(200)
 	return json.NewEncoder(w).Encode(v)
 }

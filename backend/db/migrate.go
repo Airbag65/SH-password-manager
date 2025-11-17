@@ -31,11 +31,6 @@ func (s *Store) Migrate() {
 	}
 	file.Close()
 
-	// database := CreateConnection()
-	// if database == nil {
-	// 	return
-	// }
-	// defer database.Close()
 	createTables(s.db)
 	insertDefault(s.db)
 	log.Println("Migration finished")

@@ -41,10 +41,14 @@ func (model *mainScreenModel) CreateNewPassword(hostName, password string) error
 
 	reqBody, err := json.Marshal(newPasswordReq)
 	if err != nil {
+		fmt.Println("Marshal error")
+		fmt.Println(err)
 		return err
 	}
 	request, err := http.NewRequest("POST", "https://localhost:443/pwd/new", bytes.NewBuffer(reqBody))
 	if err != nil {
+		fmt.Println("Create req error")
+		fmt.Println(err)
 		return err
 	}
 
@@ -55,13 +59,14 @@ func (model *mainScreenModel) CreateNewPassword(hostName, password string) error
 	
 	response, err := auth.Client.Do(request)
 	if err != nil {
+		fmt.Println("Send req error")
+		fmt.Println(err)
 		return err
 	}
 
 	if response.StatusCode != 200 {
 		return fmt.Errorf("Failed to create new password, statusCode was: %d\n", response.StatusCode)
 	}
-
 	return nil
 }
 

@@ -2,9 +2,8 @@ package main
 
 type HomeHandler struct{}
 
-
 /*
-   --- LOGIN ---
+--- LOGIN ---
 */
 type LoginRequest struct {
 	Email    string `json:"email"`
@@ -23,9 +22,8 @@ type LoginResponse struct {
 
 type LoginHandler struct{}
 
-
 /*
-   --- VALIDATE TOKEN ---
+--- VALIDATE TOKEN ---
 */
 type ValidateTokenHandler struct{}
 
@@ -42,8 +40,6 @@ type ValidateTokenResponse struct {
 	PemString       string `json:"pem_string"`
 }
 
-
-
 /*
    --- SIGN OUT ---
 */
@@ -58,8 +54,6 @@ type SignOutResponse struct {
 	ResponseCode    int    `json:"response_code"`
 	ResponseMessage string `json:"response_message"`
 }
-
-
 
 /*
 --- CREATE NEW USER ---
@@ -82,4 +76,26 @@ type CreateNewUserResponse struct {
 	PemString       string `json:"pem_string"`
 }
 
+type UploadNewPasswordHandler struct{}
 
+type UploadNewPasswordRequest struct {
+	HostName string `json:"host_name"`
+	Password string `json:"password"`
+}
+
+type GetPasswordValueHandler struct{}
+
+type GetPasswordRequest struct {
+	HostName string `json:"host_name"`
+}
+
+type GetPasswordResonse struct {
+	Password string `json:"password"`
+}
+
+
+type GetPasswordHostsHandler struct{}
+
+type GetPasswordHostsResponse struct {
+	Hosts []string `json:"hosts"`
+}

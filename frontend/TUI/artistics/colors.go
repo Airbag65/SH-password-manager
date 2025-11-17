@@ -33,5 +33,5 @@ var (
 	BlurredListButton = fmt.Sprintf("[ %s ]", BlurredStyle.Render("List"))
 
 	FocusedNewPasswordButton = FocusedStyle.Render("[ Add new password ]")
-	BlurredNewPasswordButton = fmt.Sprintf("[ %s ]", BlurredStyle.Render("Add Add new password"))
+	BlurredNewPasswordButton = fmt.Sprintf("[ %s ]", BlurredStyle.Render("Add new password"))
 )
