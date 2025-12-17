@@ -5,6 +5,7 @@ import (
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 	"io"
@@ -67,7 +68,7 @@ func PEMFileToString() (string, error) {
 	return string(pemBytes), nil
 }
 
-func Encrypt(message string, publicKey *rsa.PublicKey) ([]byte, error) {
+func Encrypt(message string, publicKey *rsa.PublicKey) (string, error) {
 	encBytes, err := rsa.EncryptOAEP(
 		sha256.New(),
 		rand.Reader,
@@ -75,7 +76,7 @@ func Encrypt(message string, publicKey *rsa.PublicKey) ([]byte, error) {
 		[]byte(message),
 		nil)
 	if err != nil {
-		return []byte(""), err
+		return "", err
 	}
-	return encBytes, nil
+	return base64.StdEncoding.EncodeToString(encBytes), nil
 }

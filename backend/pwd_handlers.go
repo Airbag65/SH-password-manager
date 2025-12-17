@@ -143,7 +143,7 @@ func (h *GetPasswordValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	
 	privateKey := enc.PemStringToPrivateKey(privatePemString)
 
-	decPassword, err := enc.Decrypt([]byte(encPassword), privateKey)
+	decPassword, err := enc.Decrypt(encPassword, privateKey)
 	if err != nil {
 		log.Printf("Error: %v", err)
 		InternalServerError(w)

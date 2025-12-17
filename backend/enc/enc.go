@@ -6,6 +6,7 @@ import (
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 	"io"
@@ -100,8 +101,9 @@ func Encrypt(message string, publicKey *rsa.PublicKey) ([]byte, error) {
 	return encBytes, nil
 }
 
-func Decrypt(encryptedMessage []byte, privateKey *rsa.PrivateKey) (string, error) {
-	decMessage, err := privateKey.Decrypt(nil, encryptedMessage, &rsa.OAEPOptions{Hash: crypto.SHA256})
+func Decrypt(encryptedMessage string, privateKey *rsa.PrivateKey) (string, error) {
+	bytes, err := base64.StdEncoding.DecodeString(encryptedMessage)
+	decMessage, err := privateKey.Decrypt(nil, bytes, &rsa.OAEPOptions{Hash: crypto.SHA256})
 	if err != nil {
 		log.Println("Could not Decrypt")
 		return "", err
