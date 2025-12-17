@@ -11,6 +11,7 @@ import (
 	"pwd-manager-tui/util"
 	"strings"
 
+	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -27,6 +28,8 @@ type mainScreenModel struct {
 	CurrentFocus            *int
 	NewPasswordInputs       []field
 	Width                   int
+	PasswordShowing         bool
+	ShownPassword           *string
 }
 
 func NewMainScreenModel() *mainScreenModel {
@@ -35,6 +38,8 @@ func NewMainScreenModel() *mainScreenModel {
 		HostIndex:               new(int),
 		CurrentNewPasswordField: new(int),
 		NewPasswordInputs:       make([]field, 2),
+		PasswordShowing:         false,
+		ShownPassword:           new(string),
 	}
 
 	var input textinput.Model
@@ -54,7 +59,6 @@ func NewMainScreenModel() *mainScreenModel {
 
 	return model
 }
-
 
 type Hosts struct {
 	Hosts []string `json:"hosts"`
@@ -118,6 +122,11 @@ func (model mainScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				*model.CurrentFocus = 3
 			}
 		case "enter":
+			if model.PasswordShowing {
+				model.PasswordShowing = false
+				*model.ShownPassword = ""
+				return model, nil
+			}
 			switch *model.CurrentFocus {
 			case 1:
 				if *model.CurrentNewPasswordField == 2 {
@@ -142,7 +151,7 @@ func (model mainScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case 3:
 				return model, tea.Quit
 			}
-		case "j", "J", "down", "k", "K", "up":
+		case "j", "J", "down", "k", "K", "up", "v", "V", "c", "C":
 			s := msg.String()
 			switch *model.CurrentFocus {
 			case 0:
@@ -151,6 +160,20 @@ func (model mainScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					*model.HostIndex++
 				case "k", "K", "up":
 					*model.HostIndex--
+				case "v", "V", "c", "C":
+					model.Hosts = GenerateHosts()
+					password, err := model.GetPassword(model.Hosts[*model.HostIndex])
+					if err != nil {
+						return model, nil
+					}
+					if s == "v" || s == "V" {
+						*model.ShownPassword = password
+						model.PasswordShowing = true
+					} else if s == "c" || s == "C" {
+						if err = clipboard.WriteAll(password); err != nil {
+							return model, nil
+						}
+					}
 				}
 			case 1:
 				switch s {
@@ -214,14 +237,14 @@ func (model *mainScreenModel) ViewHosts() string {
 		if *model.HostIndex == i {
 			builder.WriteString(strings.Repeat("-", model.Width/2))
 			builder.WriteString("\n")
-			builder.WriteString(fmt.Sprintf("> %s", util.RightPad(host, 20)))
-			builder.WriteString(art.GreenStyle.Render("\t[ View (v) ]"))
-			builder.WriteString(art.YellowStyle.Render("\t[ Copy to clipboard (c) ]"))
+			fmt.Fprintf(&builder, "> %s", util.RightPad(host, 20))
+			builder.WriteString(art.GreenStyle.Render("\t[ View (v) ]\t"))
+			builder.WriteString(art.YellowStyle.Strikethrough(true).Render("[ Copy to clipboard (c) ]"))
 			builder.WriteString(art.DangerStyle.Render("\t[ Remove (x) ]"))
 			builder.WriteString("\n")
 			builder.WriteString(strings.Repeat("-", model.Width/2))
 		} else {
-			builder.WriteString(fmt.Sprintf("  %s", host))
+			fmt.Fprintf(&builder, "  %s", host)
 		}
 		builder.WriteString("\n")
 	}
@@ -250,6 +273,7 @@ func (model mainScreenModel) View() string {
 
 	pageString := ""
 
+
 	switch *model.CurrentFocus {
 	case 0:
 		listButton = &art.FocusedListButton
@@ -268,6 +292,8 @@ func (model mainScreenModel) View() string {
 		pageString = "Press ENTER to quit passport"
 	}
 
+	
+
 	fmt.Fprintf(&builder, "\n%s\t\t%s\t\t%s\t\t%s\n",
 		*listButton,
 		*newPasswordButton,
@@ -275,6 +301,11 @@ func (model mainScreenModel) View() string {
 		*quitButton)
 	builder.WriteString(art.FocusedStyle.Render(strings.Repeat("-", model.Width)))
 	builder.WriteString("\n")
+	if model.PasswordShowing {
+		fmt.Fprintf(&builder, "%s", *model.ShownPassword)
+		builder.WriteString("\n\nPress ENTER to hide")
+		return builder.String()
+	}
 	builder.WriteString(pageString)
 
 	return builder.String()

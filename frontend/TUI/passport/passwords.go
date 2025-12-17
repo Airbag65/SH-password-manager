@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"pwd-manager-tui/artistics"
 	"pwd-manager-tui/auth"
@@ -14,6 +15,14 @@ import (
 
 type createPasswordRequest struct {
 	HostName string `json:"host_name"`
+	Password string `json:"password"`
+}
+
+type getPasswordRequest struct {
+	HostName string `json:"host_name"`
+}
+
+type getPasswordResonse struct {
 	Password string `json:"password"`
 }
 
@@ -68,6 +77,41 @@ func (model *mainScreenModel) CreateNewPassword(hostName, password string) error
 		return fmt.Errorf("Failed to create new password, statusCode was: %d\n", response.StatusCode)
 	}
 	return nil
+}
+
+func (model *mainScreenModel) GetPassword(hostName string) (string, error) {
+	getPasswordReq := getPasswordRequest{
+		HostName: hostName,
+	}
+
+	reqBody, err := json.Marshal(getPasswordReq)
+	if err != nil {
+		return "", err
+	}
+	request, err := http.NewRequest("PUT", "https://localhost:443/pwd/get", bytes.NewBuffer(reqBody))
+	if err != nil {
+		return "", err
+	}
+
+	authToken := auth.GetSavedData().AuthToken
+
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authToken))
+	
+	response, err := auth.Client.Do(request)
+	if err != nil {
+		return "", err
+	}
+
+	if response.StatusCode != 200 {
+		return "", fmt.Errorf("Failed to get password, statusCode was: %d\n", response.StatusCode)
+	}
+	buffer, _ := io.ReadAll(response.Body)
+	var getPasswordRes getPasswordResonse
+	if err = json.Unmarshal(buffer, &getPasswordRes); err != nil {
+		return "", fmt.Errorf("Failed to get password, statusCode was: %d\n", response.StatusCode)
+	}
+	return getPasswordRes.Password, nil
 }
 
 func (model *mainScreenModel) NewPasswordView() string {
