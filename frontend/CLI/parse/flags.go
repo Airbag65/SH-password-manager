@@ -1,5 +1,7 @@
 package parse
 
+import "slices"
+
 func (p *Parser) commandHasFlags(c string) bool {
 	for _, item := range p.commands {
 		if item.CommandName == c {
@@ -51,6 +53,24 @@ func (p *Parser) validateFlagUse(c []string) error {
 	return nil
 }
 
-func (p *Parser) getFlags(lile []string) ([]string, error) {
-	return nil, nil
+func (c *command) getPossibleFlags() []string {
+	flags := []string{}
+	for _, flag := range c.CommandOptions {
+		flags = append(flags, flag.Flag)
+	}
+	return flags
+}
+
+func (p *Parser) getFlags(command string, line []string) ([]string, error) {
+	for _, com := range p.commands {
+		if command == com.CommandName {
+			if !slices.Contains(com.getPossibleFlags(), line[0]) {
+				return nil, &ParseError{
+					What: NoSuchFlag,
+					WhichFlags: []string{line[0]},
+				}
+			}
+		}
+	}
+	return line, nil	
 }

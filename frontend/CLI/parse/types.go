@@ -2,8 +2,8 @@ package parse
 
 type ParsedCommand struct {
 	Command   string
-	Option    *string
-	Parameter *string
+	Option    string
+	Parameter string
 }
 
 type command struct {

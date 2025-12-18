@@ -34,7 +34,11 @@ func (p *Parser) Parse(c []string) (*ParsedCommand, error) {
 			What: NotEnoughArguments,
 		}
 	}
-	result := &ParsedCommand{}
+	result := &ParsedCommand{
+		Command: "",
+		Option: "",
+		Parameter: "",
+	}
 	if !p.isValidCommand(c[1]) {
 		return nil, &ParseError{
 			What: InvalidCommand,
@@ -47,9 +51,13 @@ func (p *Parser) Parse(c []string) (*ParsedCommand, error) {
 	if err := p.validateFlagUse(c); err != nil {
 		return nil, err
 	}
+	flags, err := p.getFlags(result.Command, c[2:])
+	if err != nil {
+		return nil, err
+	}
 
-
-
+	result.Option = flags[0]
+	result.Parameter = flags[1]
 	return result, nil
 }
 

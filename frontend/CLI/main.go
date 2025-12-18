@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"passport-cli/parse"
 )
@@ -39,9 +40,11 @@ func main() {
 		}
 	}
 
-	_, err := p.Parse(os.Args)
+	command, err := p.Parse(os.Args)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
+
+	fmt.Printf("%+v\n", command)
 
 }

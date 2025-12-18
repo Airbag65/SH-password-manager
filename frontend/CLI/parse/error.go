@@ -12,6 +12,7 @@ const (
 	AlreadyAdded
 	MissingFlags
 	MissingValue
+	NoSuchFlag
 )
 
 type ParseError struct {
@@ -32,6 +33,8 @@ func (e *ParseError) Error() string {
 		message = fmt.Sprintf("Invalid or missing flags. Possible flags are: %+v", e.WhichFlags)
 	case MissingValue:
 		message = "Flag is missing value"
+	case NoSuchFlag:
+		message = fmt.Sprintf("No such flag (%s)", e.WhichFlags[0])
 	}
 	return fmt.Sprintf("ParseError: %s", message)
 }
