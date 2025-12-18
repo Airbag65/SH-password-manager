@@ -31,7 +31,6 @@ func main() {
 			if err != nil {
 				fmt.Printf("Could not login: %v", err)
 			}
-			// fmt.Printf("You are now logged in as %s %s\n", loginRes.Name, loginRes.Surname)
 		case 1:
 			signUpModel := auth.NewSignUpModel()
 			signUpScreen := tea.NewProgram(signUpModel, tea.WithAltScreen())
@@ -40,7 +39,6 @@ func main() {
 			if err != nil {
 				fmt.Printf("Could not sign up: %v", err)
 			}
-			// fmt.Printf("Registered user %s %s\n", signUpRes.Name, signUpRes.Surname)
 		case 2:
 			panic("exit")
 		}
@@ -48,7 +46,4 @@ func main() {
 	mainScreenModel := pass.NewMainScreenModel()
 	mainscreen := tea.NewProgram(mainScreenModel, tea.WithAltScreen())
 	mainscreen.Run()
-
-	// fmt.Println("Authorized")
-
 }

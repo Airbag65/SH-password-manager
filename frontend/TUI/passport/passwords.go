@@ -114,6 +114,40 @@ func (model *mainScreenModel) GetPassword(hostName string) (string, error) {
 	return getPasswordRes.Password, nil
 }
 
+type DeletePasswordRequest struct {
+	HostName string `json:"host_name"`
+}
+
+func (model *mainScreenModel) DeletePassword(hostname string) error {
+	deletePasswordReq := DeletePasswordRequest{
+		HostName: hostname,
+	}
+
+	reqBody, err := json.Marshal(deletePasswordReq)
+	if err != nil {
+		return err
+	}
+	request, err := http.NewRequest("DELETE", "https://localhost:443/pwd/remove", bytes.NewBuffer(reqBody))
+	if err != nil {
+		return err
+	}
+
+	authToken := auth.GetSavedData().AuthToken
+
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authToken))
+	
+	response, err := auth.Client.Do(request)
+	if err != nil {
+		return err
+	}
+
+	if response.StatusCode != 200 {
+		return fmt.Errorf("Failed to get password, statusCode was: %d\n", response.StatusCode)
+	}
+	return nil	
+}
+
 func (model *mainScreenModel) NewPasswordView() string {
 	var builder strings.Builder
 	
@@ -131,3 +165,4 @@ func (model *mainScreenModel) NewPasswordView() string {
 
 	return builder.String()
 }
+

@@ -195,17 +195,17 @@ func (s *LocalStorage) GetPassword(userId int, hostname string) (string, error) 
 }
 
 func (s *LocalStorage) RemovePassword(userId int, hostname string) error {
-	removePasswordQuery := fmt.Sprintf(`REMOVE FROM password
+	removePasswordQuery := `DELETE FROM password
 		WHERE
-			user_id = %d
+			user_id = ?
 		AND
-			host_name = '%s';`, userId, hostname)
+			host_name = ?;`
 	statement, err := s.db.Prepare(removePasswordQuery)	
 	if err != nil {
-		log.Fatalf("Could not remove password (userId: %d - hostname: %s)", userId, hostname)
+		log.Fatalf("Could not remove password (userId: %d - hostname: %s). Error: %v", userId, hostname, err)
 		return err
 	}
 
-	_, err = statement.Exec()
+	_, err = statement.Exec(userId, hostname)
 	return err
 }

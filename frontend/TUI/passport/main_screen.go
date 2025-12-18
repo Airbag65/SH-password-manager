@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	art "pwd-manager-tui/artistics"
 	"pwd-manager-tui/auth"
@@ -29,6 +30,7 @@ type mainScreenModel struct {
 	NewPasswordInputs       []field
 	Width                   int
 	PasswordShowing         bool
+	DeletingPassword        bool
 	ShownPassword           *string
 }
 
@@ -39,6 +41,7 @@ func NewMainScreenModel() *mainScreenModel {
 		CurrentNewPasswordField: new(int),
 		NewPasswordInputs:       make([]field, 2),
 		PasswordShowing:         false,
+		DeletingPassword:        false,
 		ShownPassword:           new(string),
 	}
 
@@ -126,6 +129,19 @@ func (model mainScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				model.PasswordShowing = false
 				*model.ShownPassword = ""
 				return model, nil
+			} else if model.DeletingPassword {
+				model.DeletingPassword = false
+				model.Hosts = GenerateHosts()
+				if err := model.DeletePassword(model.Hosts[*model.HostIndex]); err != nil {
+					log.Fatal(err)
+				}
+				model.Hosts = GenerateHosts()
+				if len(model.Hosts) > 0 {
+					*model.HostIndex = len(model.Hosts) - 1
+				} else {
+					model.HostIndex = new(int)
+				}
+				return model, nil
 			}
 			switch *model.CurrentFocus {
 			case 1:
@@ -139,6 +155,7 @@ func (model mainScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					model.NewPasswordInputs[0].Field.SetValue("")
 					model.NewPasswordInputs[1].Field.SetValue("")
 					*model.CurrentFocus = 0
+					model.Hosts = GenerateHosts()
 					return model, nil
 				}
 
@@ -151,7 +168,12 @@ func (model mainScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case 3:
 				return model, tea.Quit
 			}
-		case "j", "J", "down", "k", "K", "up", "v", "V", "c", "C":
+		case "esc":
+			if model.DeletingPassword {
+				model.DeletingPassword = false
+				return model, nil
+			}
+		case "j", "J", "down", "k", "K", "up", "v", "V", "c", "C", "x", "X":
 			s := msg.String()
 			switch *model.CurrentFocus {
 			case 0:
@@ -170,10 +192,13 @@ func (model mainScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						*model.ShownPassword = password
 						model.PasswordShowing = true
 					} else if s == "c" || s == "C" {
+						// TODO: Something is wrong here! Does not work for some reason
 						if err = clipboard.WriteAll(password); err != nil {
 							return model, nil
 						}
 					}
+				case "x", "X":
+					model.DeletingPassword = true
 				}
 			case 1:
 				switch s {
@@ -273,7 +298,6 @@ func (model mainScreenModel) View() string {
 
 	pageString := ""
 
-
 	switch *model.CurrentFocus {
 	case 0:
 		listButton = &art.FocusedListButton
@@ -292,8 +316,6 @@ func (model mainScreenModel) View() string {
 		pageString = "Press ENTER to quit passport"
 	}
 
-	
-
 	fmt.Fprintf(&builder, "\n%s\t\t%s\t\t%s\t\t%s\n",
 		*listButton,
 		*newPasswordButton,
@@ -304,6 +326,10 @@ func (model mainScreenModel) View() string {
 	if model.PasswordShowing {
 		fmt.Fprintf(&builder, "%s", *model.ShownPassword)
 		builder.WriteString("\n\nPress ENTER to hide")
+		return builder.String()
+	} else if model.DeletingPassword {
+		fmt.Fprintf(&builder, "Deleting password for '%s'", model.Hosts[*model.HostIndex])
+		builder.WriteString("\n\nPress ENTER to confirm or press ESCAPE to cancel")
 		return builder.String()
 	}
 	builder.WriteString(pageString)
