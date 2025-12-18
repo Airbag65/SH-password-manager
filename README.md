@@ -42,7 +42,6 @@ $ ./target/bin/passport-server migrate
 ```
 It is once again important that you are located in the `backend` directory
 
-
 ### Running
 Running the server requires a `superuser` in order to open the port `:443` (HTTP). To start the server, simply run:
 ```bash
