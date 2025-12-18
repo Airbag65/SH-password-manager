@@ -1,54 +1,30 @@
 package parse
 
-import (
-	"fmt"
-)
-
-
-type ParsedCommand struct {
-	Command   string
-	Option    *string
-	Parameter *string
-}
-
-type command struct {
-	CommandName string
-	CommandOptions []string
-}
-
-type Parser struct{
-	commands []command
-}
-
-
-func New() *Parser {
-	return &Parser{}
-}
-
-type commandOpt func(*command)
-
-
-func defaultCommand (cn string) command {
-	return command{
-		CommandName: cn,
-		CommandOptions: []string{},
-	}	
-}
-
-func AddCommandOption(on string) commandOpt {
+func AddFlag(f *Flag) commandOpt {
 	return func(c *command) {
-		c.CommandOptions = append(c.CommandOptions, on)
+		for _, flag := range c.CommandOptions {
+			if f.Flag == flag.Flag {
+				return
+			}
+		}
+		c.CommandOptions = append(c.CommandOptions, *f)
 	}
 }
 
 func (p *Parser) AddCommand(command string, opts ...commandOpt) error {
-	newCommand := defaultCommand(command)	
+	for _, comm := range p.commands {
+		if comm.CommandName == command {
+			return &ParseError{
+				What: AlreadyAdded,
+			}
+		}
+	}
+	newCommand := defaultCommand(command)
 	for _, fn := range opts {
 		fn(&newCommand)
 	}
-
 	p.commands = append(p.commands, newCommand)
-	
+
 	return nil
 }
 
@@ -58,13 +34,30 @@ func (p *Parser) Parse(c []string) (*ParsedCommand, error) {
 			What: NotEnoughArguments,
 		}
 	}
+	result := &ParsedCommand{}
+	if !p.isValidCommand(c[1]) {
+		return nil, &ParseError{
+			What: InvalidCommand,
+		}
+	}
+	result.Command = c[1]
+	if !p.commandHasFlags(c[1]) {
+		return result, nil
+	}
+	if err := p.validateFlagUse(c); err != nil {
+		return nil, err
+	}
 
-	fmt.Printf("%+v\n", p.commands)
-	
-	return &ParsedCommand{
-		Command: "status",
-		Option: nil,
-		Parameter: nil,
-	}, nil
+
+
+	return result, nil
 }
 
+func (p *Parser) isValidCommand(comm string) bool {
+	for _, commmand := range p.commands {
+		if comm == commmand.CommandName {
+			return true
+		}
+	}
+	return false
+}

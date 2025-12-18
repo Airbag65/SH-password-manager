@@ -21,10 +21,13 @@ func main() {
 	}
 
 	p := parse.New()
+	hostDesc := "Specify which host to direct the command at"
+	hostFlag := parse.NewFlag("--host", hostDesc, true)
+	hFlag := parse.NewFlag("-h", hostDesc, false)
 	for _, comm := range commands {
 		switch comm {
 		case "get", "remove", "rm":
-			err := p.AddCommand(comm, parse.AddCommandOption("--host"), parse.AddCommandOption("-h"))
+			err := p.AddCommand(comm, parse.AddFlag(hostFlag), parse.AddFlag(hFlag))
 			if err != nil {
 				fmt.Println(err)
 			}
