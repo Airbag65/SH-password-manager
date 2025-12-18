@@ -18,7 +18,7 @@ func CreateConnection() *sql.DB {
 	return database
 }
 
-func (s *Store) Migrate() {
+func (s *LocalStorage) Migrate() {
 	log.Println("Migrating database")
 	os.Remove("./db/.db")
 

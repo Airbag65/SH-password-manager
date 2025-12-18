@@ -7,11 +7,29 @@ import (
 	"time"
 )
 
-type Store struct {
+type Storage interface {
+	Init() error
+	GetUserWithEmail(string) *User
+	GetUserWithAuthToken(string) *User
+	SetAuthToken(string, string)
+	RemoveAuthToken(string)
+	CreateNewUser(string, string, string, string)
+	AddNewPassord(int, string, string) error
+	GetHostNames(int) []string
+	GetPassword(int, string) (string, error)
+	RemovePassword(int, string) error
+	Migrate()
+}
+
+type LocalStorage struct {
 	db *sql.DB
 }
 
-func (s *Store) Init() error {
+func NewLocalStorage() *LocalStorage {
+	return &LocalStorage{}
+}
+
+func (s *LocalStorage) Init() error {
 	database, err := sql.Open("sqlite3", "./db/.db")
 	if err != nil {
 		log.Fatal("Could not connect to database")
@@ -22,7 +40,7 @@ func (s *Store) Init() error {
 	return nil
 }
 
-func (s *Store) GetUserWithEmail(userEmail string) *User {
+func (s *LocalStorage) GetUserWithEmail(userEmail string) *User {
 	row, err := s.db.Query(fmt.Sprintf("SELECT * FROM user WHERE email = '%s';", userEmail))
 	if err != nil {
 		log.Fatalf("Could not retrieve user with email '%s'", userEmail)
@@ -42,7 +60,7 @@ func (s *Store) GetUserWithEmail(userEmail string) *User {
 	return user
 }
 
-func (s *Store) GetUserWithAuthToken(authToken string) *User {
+func (s *LocalStorage) GetUserWithAuthToken(authToken string) *User {
 	row, err := s.db.Query(fmt.Sprintf("SELECT * FROM user where auth_token = '%s';", authToken))
 	if err != nil {
 		log.Fatalf("Could not retrieve user with auth_token '%s'", authToken)
@@ -70,7 +88,7 @@ func (s *Store) GetUserWithAuthToken(authToken string) *User {
 	return selectedUser
 }
 
-func (s *Store) SetAuthToken(userEmail, authToken string) {
+func (s *LocalStorage) SetAuthToken(userEmail, authToken string) {
 	expiryDate := time.Now().AddDate(0, 1, 0).Unix()
 	updateUserQuery := fmt.Sprintf(`UPDATE user
     SET auth_token = '%s',
@@ -86,7 +104,7 @@ func (s *Store) SetAuthToken(userEmail, authToken string) {
 	log.Printf("Updated AUTH on '%s'", userEmail)
 }
 
-func (s *Store) RemoveAuthToken(userEmail string) {
+func (s *LocalStorage) RemoveAuthToken(userEmail string) {
 	user := s.GetUserWithEmail(userEmail)
 	if user == nil {
 		log.Fatal("User not found(RemoveAuthToken)")
@@ -107,7 +125,7 @@ func (s *Store) RemoveAuthToken(userEmail string) {
 	log.Printf("Removed AUTH token on '%s'", userEmail)
 }
 
-func (s *Store) CreateNewUser(email, password, name, surname string) {
+func (s *LocalStorage) CreateNewUser(email, password, name, surname string) {
 	createNewUserQuery := `INSERT INTO user(
         email, 
         password, 
@@ -126,7 +144,7 @@ func (s *Store) CreateNewUser(email, password, name, surname string) {
 	log.Printf("Created user '%s %s' - '%s'", name, surname, email)
 }
 
-func (s *Store) AddNewPassord(userId int, password, hostName string) error {
+func (s *LocalStorage) AddNewPassord(userId int, password, hostName string) error {
 	insertNewPasswordQuery := `INSERT INTO password(
 		user_id,
 		password,
@@ -147,7 +165,7 @@ func (s *Store) AddNewPassord(userId int, password, hostName string) error {
 	return nil
 }
 
-func (s *Store) GetHostNames(userId int) []string {
+func (s *LocalStorage) GetHostNames(userId int) []string {
 	getHostsQuery := fmt.Sprintf("SELECT host_name FROM password where user_id = %d", userId)
 
 	row, err := s.db.Query(getHostsQuery)
@@ -159,7 +177,7 @@ func (s *Store) GetHostNames(userId int) []string {
 	return DbEntryToHostNames(row)
 }
 
-func (s *Store) GetPassword(userId int, hostname string) (string, error) {
+func (s *LocalStorage) GetPassword(userId int, hostname string) (string, error) {
 	getPasswordQuery := fmt.Sprintf(`SELECT password 
 		FROM password 
 		WHERE 
@@ -176,7 +194,7 @@ func (s *Store) GetPassword(userId int, hostname string) (string, error) {
 	return DbEntryToPassword(row), nil
 }
 
-func (s *Store) RemovePassword(userId int, hostname string) error {
+func (s *LocalStorage) RemovePassword(userId int, hostname string) error {
 	removePasswordQuery := fmt.Sprintf(`REMOVE FROM password
 		WHERE
 			user_id = %d

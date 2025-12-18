@@ -12,9 +12,10 @@ import (
 	"github.com/rs/cors"
 )
 
-var s db.Store
+var s db.Storage
 
 func main() {
+	s = db.NewLocalStorage()
 	if err := s.Init(); err != nil {
 		panic("Could not initialize database")
 	}
