@@ -9,20 +9,20 @@ import (
 )
 
 func CreateConnection() *sql.DB {
-	database, err := sql.Open("sqlite3", "./db/database.db")
+	database, err := sql.Open("sqlite3", "./db/.db")
 	if err != nil {
 		log.Fatal("Could not connect to database")
 		return nil
 	}
-	log.Println("Connected to './db/database.db'")
+	log.Println("Connected to './db/.db'")
 	return database
 }
 
 func (s *Store) Migrate() {
 	log.Println("Migrating database")
-	os.Remove("./db/database.db")
+	os.Remove("./db/.db")
 
-	file, err := os.Create("./db/database.db")
+	file, err := os.Create("./db/.db")
 	if err != nil {
 		return
 	}

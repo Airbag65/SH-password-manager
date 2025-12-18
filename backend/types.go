@@ -99,3 +99,9 @@ type GetPasswordHostsHandler struct{}
 type GetPasswordHostsResponse struct {
 	Hosts []string `json:"hosts"`
 }
+
+type RemovePasswordHandler struct {}
+
+type RemovePasswordRequest struct {
+	HostName string `json:"host_name"`
+}

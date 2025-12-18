@@ -12,12 +12,12 @@ type Store struct {
 }
 
 func (s *Store) Init() error {
-	database, err := sql.Open("sqlite3", "./db/database.db")
+	database, err := sql.Open("sqlite3", "./db/.db")
 	if err != nil {
 		log.Fatal("Could not connect to database")
 		return err
 	}
-	log.Println("Connected to './db/database.db'")
+	log.Println("Connected to './db/.db'")
 	s.db = database
 	return nil
 }
@@ -174,4 +174,20 @@ func (s *Store) GetPassword(userId int, hostname string) (string, error) {
 	}
 
 	return DbEntryToPassword(row), nil
+}
+
+func (s *Store) RemovePassword(userId int, hostname string) error {
+	removePasswordQuery := fmt.Sprintf(`REMOVE FROM password
+		WHERE
+			user_id = %d
+		AND
+			host_name = '%s';`, userId, hostname)
+	statement, err := s.db.Prepare(removePasswordQuery)	
+	if err != nil {
+		log.Fatalf("Could not remove password (userId: %d - hostname: %s)", userId, hostname)
+		return err
+	}
+
+	_, err = statement.Exec()
+	return err
 }

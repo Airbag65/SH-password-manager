@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"strings"
 )
 
 // 4673992a-f65c-4da8-99f0-fa630f54ed28ec0e1431-1674-4c32-a606-efdd160862c7
@@ -17,32 +16,10 @@ func (h *GetPasswordHostsHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	tokenHeader := r.Header.Get("Authorization")
-	if tokenHeader == "" {
-		BadRequest(w)
-		return
-	}
-
-	bearer := strings.Split(tokenHeader, " ")[0]
-	if bearer != "Bearer" {
-		BadRequest(w)
-		return
-	}
-	token := strings.Split(tokenHeader, " ")[1]
-
-	userInformation := s.GetUserWithAuthToken(token)
-	if userInformation == nil {
-		Unauthorized(w)
-		return
-	}
+	userInformation := ValidateToken(w, r)
 
 	names := s.GetHostNames(userInformation.Id)
 
-	// bytes, err := json.Marshal(names)
-	// if err != nil {
-	// 	InternalServerError(w)
-	// 	return
-	// }
 	WriteJSON(w, GetPasswordHostsResponse{Hosts: names})
 }
 
@@ -60,28 +37,11 @@ func (h *UploadNewPasswordHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		BadRequest(w)
 		return
 	}
-
-	tokenHeader := r.Header.Get("Authorization")
-	if tokenHeader == "" {
-		BadRequest(w)
-		return
-	}
-
-	bearer := strings.Split(tokenHeader, " ")[0]
-	if bearer != "Bearer" {
-		BadRequest(w)
-		return
-	}
-	token := strings.Split(tokenHeader, " ")[1]
+	userInformation := ValidateToken(w, r)
 
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		BadRequest(w)
-		return
-	}
-	userInformation := s.GetUserWithAuthToken(token)
-	if userInformation == nil {
-		Unauthorized(w)
 		return
 	}
 
@@ -102,24 +62,7 @@ func (h *GetPasswordValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	tokenHeader := r.Header.Get("Authorization")
-	if tokenHeader == "" {
-		BadRequest(w)
-		return
-	}
-
-	bearer := strings.Split(tokenHeader, " ")[0]
-	if bearer != "Bearer" {
-		BadRequest(w)
-		return
-	}
-	token := strings.Split(tokenHeader, " ")[1]
-
-	userInformation := s.GetUserWithAuthToken(token)
-	if userInformation == nil {
-		Unauthorized(w)
-		return
-	}
+	userInformation := ValidateToken(w, r)
 
 	var request GetPasswordRequest
 
@@ -151,4 +94,23 @@ func (h *GetPasswordValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	}
 
 	WriteJSON(w, GetPasswordResonse{Password: decPassword})
+}
+
+func (h *RemovePasswordHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		MethodNotAllowed(w)
+		return
+	}
+
+	userInformation := ValidateToken(w, r)
+	var req RemovePasswordRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		InternalServerError(w)
+	}
+
+	if err := s.RemovePassword(userInformation.Id, req.HostName); err != nil {
+		NotFound(w)
+	}
+	w.WriteHeader(200)
+	w.Write([]byte("OK"))
 }

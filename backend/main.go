@@ -72,6 +72,7 @@ func main() {
 	server.Handle("/pwd/getHosts", &GetPasswordHostsHandler{})
 	server.Handle("/pwd/new", &UploadNewPasswordHandler{})
 	server.Handle("/pwd/get", &GetPasswordValueHandler{})
+	server.Handle("/pwd/remove", &RemovePasswordHandler{})
 
 
 	handler := cors.Default().Handler(server)

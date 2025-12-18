@@ -1,5 +1,6 @@
 .idea
 backend/db/database.db*
+backend/db/.db*
 .DS_Store
 backend/db/.DS_Store
 backend/cert.pem
