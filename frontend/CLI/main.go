@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"passport-cli/parse"
+
+	"github.com/Airbag65/argparse"
 )
 
 func main() {
@@ -21,14 +22,14 @@ func main() {
 		"rm",
 	}
 
-	p := parse.New()
+	p := argparse.New()
 	hostDesc := "Specify which host to direct the command at"
-	hostFlag := parse.NewFlag("--host", hostDesc, true)
-	hFlag := parse.NewFlag("-h", hostDesc, false)
+	hostFlag := argparse.NewFlag("--host", hostDesc, true)
+	hFlag := argparse.NewFlag("-h", hostDesc, false)
 	for _, comm := range commands {
 		switch comm {
 		case "get", "remove", "rm":
-			err := p.AddCommand(comm, parse.AddFlag(hostFlag), parse.AddFlag(hFlag))
+			err := p.AddCommand(comm, argparse.AddFlag(hostFlag), argparse.AddFlag(hFlag))
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -44,7 +45,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	fmt.Printf("%+v\n", command)
-
 }
